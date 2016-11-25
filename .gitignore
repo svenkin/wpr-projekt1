@@ -10,3 +10,5 @@ platforms/
 resources/
 node_modules/
 .git/
+.metadata/
+RemoteSystemsTempFiles/
