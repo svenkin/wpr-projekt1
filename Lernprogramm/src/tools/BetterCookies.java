@@ -17,6 +17,10 @@ public class BetterCookies {
 	
 	private HashMap<String, Cookie> betterCookies;
 	
+	public BetterCookies() {
+		this(null);
+	}
+	
 	public BetterCookies(Cookie[] badCookies) {
 		if (badCookies != null) {
 			this.betterCookies = new HashMap<>(badCookies.length);
