@@ -24,6 +24,10 @@
             text-transform: uppercase;
         }
 
+        .mdl-grid {
+            max-width: 1024px;
+        }
+
         .mdl-card,
         .mdl-textfield {
             width: 100%;
@@ -38,8 +42,6 @@
             margin-right: 2rem;
         }
     </style>
-
-    <script src="node_modules/vue/dist/vue.min.js"></script>
 </head>
 
 <body>
@@ -49,14 +51,14 @@
                 <span class="mdl-layout-title">Lernprogramm</span>
                 <div class="mdl-layout-spacer"></div>
                 <nav class="mdl-navigation mdl-layout--large-screen-only">
-                    <a class="mdl-navigation__link" href="login.prototype.html">Anmeldung</a>
-                    <a class="mdl-navigation__link" href="register.prototype.html">Registrierung</a>
+                    <a class="mdl-navigation__link" href="login.html">Anmeldung</a>
+                    <a class="mdl-navigation__link" href="register.html">Registrierung</a>
                 </nav>
             </div>
         </header>
         <main class="mdl-layout__content">
             <div class="mdl-grid">
-                <div class="mdl-cell mdl-cell--6-col mdl-cell--3-offset-desktop mdl-cell--1-offset-tablet">
+                <div class="mdl-cell mdl-cell--6-col-desktop mdl-cell--3-offset-desktop mdl-cell--6-col-tablet mdl-cell--1-offset-tablet">
                     <div class="mdl-card mdl-shadow--2dp">
                         <form action="register" method="POST">
                             <div class="mdl-card__title mdl-card--expand">

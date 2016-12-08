@@ -1,15 +1,16 @@
 package controller;
 
 import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 
 import model.Gender;
 import model.User;
@@ -17,6 +18,8 @@ import model.User;
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	private String registerUserSql = "INSERT INTO user (first_name, last_name, gender, nick_name, password) VALUES (?, ?, ?, ?, ?);";
 
 	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		String firstName = req.getParameter("first-name");
@@ -27,23 +30,25 @@ public class RegisterServlet extends HttpServlet {
 
 		// TODO: Validitäts-Check
 		User newUser = new User(firstName, lastName, gender, nickName, password);
-		boolean success = this.registerUser(newUser);
+		if (this.registerUser(newUser)) res.sendRedirect("login.html");
+		else req.getRequestDispatcher("error.html").forward(req, res);
 	}
 
 	private boolean registerUser(User newUser) {
-		// TODO: Permanente Speicherung
-		Map<String, User> registeredUsers = this.getRegisteredUsers();
-		return registeredUsers.putIfAbsent(newUser.getNickName(), newUser) == null;
-	}
-
-	private Map<String, User> getRegisteredUsers() {
-		ServletContext app = this.getServletContext();
-		@SuppressWarnings("unchecked")
-		Map<String, User> registeredUsers = (Map<String, User>) app.getAttribute("registeredUsers");
-		if (registeredUsers == null) {
-			registeredUsers = new Hashtable<>();
-			app.setAttribute("registeredUsers", registeredUsers);
+		DataSource dataSource = (DataSource) this.getServletContext().getAttribute("dataSource");
+		try (Connection con = dataSource.getConnection();
+			 PreparedStatement statement = con.prepareStatement(this.registerUserSql)) {
+			statement.setString(1, newUser.getFirstName());
+			statement.setString(2, newUser.getLastName());
+			statement.setString(3, newUser.getGender().toString());
+			statement.setString(4, newUser.getNickName());
+			statement.setString(5, newUser.getPassword());
+			statement.executeUpdate();
+			return true;
+		} catch (SQLException e) {
+			for (Throwable t : e.getSuppressed()) t.printStackTrace();
+			e.printStackTrace();
+			return false;
 		}
-		return registeredUsers;
 	}
 }

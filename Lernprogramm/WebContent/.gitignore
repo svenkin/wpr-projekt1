@@ -1,2 +1,4 @@
+.idea/
 dist/
+WEB-INF/web.xml
 npm-debug.log
