@@ -1,9 +1,16 @@
-import Vue from 'vue'
-import App from './app/app.vue'
+import vue from 'vue';
+import vueRouter from 'vue-router';
+import chapter from './app/components/chapter.vue';
 
-new Vue({
-    el: 'app',
-    components: {
-        App
-    }
-})
+vue.use(vueRouter);
+
+const routes = [
+    { path: '/chapter', component: chapter }
+];
+const router = new vueRouter({
+    routes // short for routes: routes
+});
+
+const app = new vue({
+    router
+}).$mount('#app');
