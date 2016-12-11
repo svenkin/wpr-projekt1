@@ -22,7 +22,8 @@
                 <div class="mdl-layout-spacer"></div>
                 <!-- Navigation. We hide it in small screens. -->
                 <nav class="mdl-navigation mdl-layout--large-screen-only">
-                    <router-link class="mdl-navigation__link" to="/chapter">Go to Chapter</router-link>
+                    <!---->
+
                     <a class="mdl-navigation__link" href="">Link</a>
                     <a class="mdl-navigation__link" href="">Link</a>
                     <a class="mdl-navigation__link" href="">Link</a>
@@ -32,12 +33,11 @@
         </header>
         <div class="mdl-layout__drawer">
             <span class="mdl-layout-title">Title</span>
-            <nav class="mdl-navigation">
-                <a class="mdl-navigation__link" href="">Link</a>
-                <a class="mdl-navigation__link" href="">Link</a>
-                <a class="mdl-navigation__link" href="">Link</a>
-                <a class="mdl-navigation__link" href="">Link</a>
-            </nav>
+            <span v-if="!menupoints.data" class="mdl-layout-title">Menüpunkte laden</span>
+            <router-link v-if="menupoints.data" v-for="point in menupoints.data" class="mdl-navigation" :to="point.name" :myData="point">
+                <router-link v-if="menupoints.data" class="mdl-navigation__link" :to="chapterRoute+point.name">{{point.name}}</router-link>
+                <router-link v-if="menupoints.data" v-for="lection in point.lections" class="mdl-navigation__link" :to="lectionRoute+lection.name">{{lection.name}}</router-link>
+            </router-link>
         </div>
         <main class="mdl-layout__content">
             <div class="page-content">
@@ -46,6 +46,7 @@
         </main>
     </div>
 </div>
+
 <script src="node_modules/material-design-lite/material.min.js"></script>
 <script src="dist/bundle.js"></script>
 </body>
