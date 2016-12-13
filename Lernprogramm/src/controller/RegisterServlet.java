@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -19,6 +20,8 @@ import model.User;
 public class RegisterServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
+	@Resource
+	private DataSource dataSource;
 	private String registerUserSql = "INSERT INTO user (first_name, last_name, gender, nick_name, password) VALUES (?, ?, ?, ?, ?);";
 
 	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -35,8 +38,7 @@ public class RegisterServlet extends HttpServlet {
 	}
 
 	private boolean registerUser(User newUser) {
-		DataSource dataSource = (DataSource) this.getServletContext().getAttribute("dataSource");
-		try (Connection con = dataSource.getConnection();
+		try (Connection con = this.dataSource.getConnection();
 			 PreparedStatement statement = con.prepareStatement(this.registerUserSql)) {
 			statement.setString(1, newUser.getFirstName());
 			statement.setString(2, newUser.getLastName());

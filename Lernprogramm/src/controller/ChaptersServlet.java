@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonStructure;
@@ -24,7 +25,9 @@ import model.Chapter;
 public class ChaptersServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
-	private String chapterSql = "SELECT id, title, description FROM chapter";
+	@Resource
+	private DataSource dataSource;
+	private String chapterSql = "SELECT id, title, description FROM chapter;";
 
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		res.setContentType("application/json");
@@ -41,7 +44,7 @@ public class ChaptersServlet extends HttpServlet {
 				data.add(Json.createObjectBuilder()
 						.add("id", c.getId())
 						.add("title", c.getTitle())
-						.add("descrition", c.getDescription()));
+						.add("description", c.getDescription()));
 			}
 			structure = Json.createObjectBuilder().add("data", data).build();
 		}
@@ -50,8 +53,7 @@ public class ChaptersServlet extends HttpServlet {
 	
 	private List<Chapter> loadChapters() {
 		List<Chapter> chapters = null;
-		DataSource dataSource = (DataSource) this.getServletContext().getAttribute("dataSource");
-		try (Connection con = dataSource.getConnection();
+		try (Connection con = this.dataSource.getConnection();
 			 Statement statement = con.createStatement();
 			 ResultSet rs = statement.executeQuery(this.chapterSql)) {
 			chapters = new ArrayList<>();
