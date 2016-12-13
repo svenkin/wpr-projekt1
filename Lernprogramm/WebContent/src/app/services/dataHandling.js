@@ -1,4 +1,3 @@
-<script>
     export default {
         getChapters :  () => {
                     return new Promise((resolve,reject)=>{
@@ -11,8 +10,3 @@
                         })
                     }
     }
-
-
-
-
-</script>

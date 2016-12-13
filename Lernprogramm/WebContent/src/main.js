@@ -2,7 +2,7 @@ import vue from 'vue';
 import vueRouter from 'vue-router';
 import chapter from './app/components/chapter.vue';
 import lection from './app/components/lection.vue';
-import data from './app/services/dataHandling.vue';
+import data from './app/services/dataHandling.js';
 
 
 

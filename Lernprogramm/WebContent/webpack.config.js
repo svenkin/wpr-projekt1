@@ -13,7 +13,15 @@ module.exports = {
                 test: /\.vue$/,
                 loader: 'vue-loader',
                 exclude: 'node_modules/'
-            }
+            },
+            {
+               test: /\.js$/,
+               exclude: 'node_modules/',
+               loader: 'babel-loader',
+               query: {
+                 presets: ['es2015']
+               }
+             }
         ]
     },
     resolve: {
