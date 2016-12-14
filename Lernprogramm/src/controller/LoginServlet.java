@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -21,6 +22,8 @@ import model.User;
 public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
+	@Resource
+	private DataSource dataSource;
 	private String loginUserSql = "SELECT first_name, last_name, gender, nick_name, password FROM user WHERE nick_name=?;";
 
 	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -37,8 +40,7 @@ public class LoginServlet extends HttpServlet {
 
 	private User loginUser(String nickName, String password) {
 		User user = null;
-		DataSource dataSource = (DataSource) this.getServletContext().getAttribute("dataSource");
-		try (Connection con = dataSource.getConnection();
+		try (Connection con = this.dataSource.getConnection();
 			 PreparedStatement statement = con.prepareStatement(this.loginUserSql)) {
 			statement.setString(1, nickName);
 			try (ResultSet rs = statement.executeQuery()) {
