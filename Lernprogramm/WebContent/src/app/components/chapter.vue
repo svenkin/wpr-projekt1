@@ -7,11 +7,14 @@
 </template>
 
 <script>
+    import stateData from './../services/stateData.js';
     export default{
         methods: {
         },
         created () {
-            console.log(this.$route);
+            let std = new stateData();
+            console.log("Data in chapter");
+            console.log(std.chapter);
        }
     }
 
