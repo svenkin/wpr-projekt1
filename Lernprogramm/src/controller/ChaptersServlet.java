@@ -29,10 +29,10 @@ public class ChaptersServlet extends HttpServlet {
 	private DataSource dataSource;
 	private String chapterSql = "SELECT id, title, description FROM chapter;";
 
-	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		res.setContentType("application/json");
-		res.setCharacterEncoding("UTF-8");
-		Json.createWriter(res.getWriter()).write(this.getChapters());
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		Json.createWriter(response.getWriter()).write(this.getChapters());
 	}
 
 	private JsonStructure getChapters() {

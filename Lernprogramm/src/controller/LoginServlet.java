@@ -26,16 +26,16 @@ public class LoginServlet extends HttpServlet {
 	private DataSource dataSource;
 	private String loginUserSql = "SELECT first_name, last_name, gender, nick_name, password FROM user WHERE nick_name=?;";
 
-	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		String nickName = req.getParameter("nick-name");
-		String password = req.getParameter("password");
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String nickName = request.getParameter("nick-name");
+		String password = request.getParameter("password");
 
 		User user = loginUser(nickName, password);
 		if (user != null) {
-			HttpSession session = req.getSession();
+			HttpSession session = request.getSession();
 			session.setAttribute("user", user);
-			res.sendRedirect(res.encodeRedirectURL("index.html"));
-		} else res.sendRedirect("error.html");
+			response.sendRedirect(response.encodeRedirectURL("app.html"));
+		} else response.sendRedirect("error.html");
 	}
 
 	private User loginUser(String nickName, String password) {

@@ -24,17 +24,17 @@ public class RegisterServlet extends HttpServlet {
 	private DataSource dataSource;
 	private String registerUserSql = "INSERT INTO user (first_name, last_name, gender, nick_name, password) VALUES (?, ?, ?, ?, ?);";
 
-	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		String firstName = req.getParameter("first-name");
-		String lastName = req.getParameter("last-name");
-		Gender gender = Gender.valueOf(req.getParameter("gender"));
-		String nickName = req.getParameter("nick-name");
-		String password = req.getParameter("password");
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String firstName = request.getParameter("first-name");
+		String lastName = request.getParameter("last-name");
+		Gender gender = Gender.valueOf(request.getParameter("gender"));
+		String nickName = request.getParameter("nick-name");
+		String password = request.getParameter("password");
 
 		// TODO: Validitäts-Check
 		User newUser = new User(firstName, lastName, gender, nickName, password);
-		if (this.registerUser(newUser)) res.sendRedirect("login.html");
-		else req.getRequestDispatcher("error.html").forward(req, res);
+		if (this.registerUser(newUser)) response.sendRedirect("login.html");
+		else request.getRequestDispatcher("error.html").forward(request, response);
 	}
 
 	private boolean registerUser(User newUser) {
