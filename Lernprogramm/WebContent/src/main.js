@@ -1,37 +1,42 @@
-import vue from 'vue';
+import Vue from 'vue';
 import vueRouter from 'vue-router';
+
+import index from './app/components/index.vue';
 import chapter from './app/components/chapter.vue';
 import lection from './app/components/lection.vue';
+
 import data from './app/services/dataHandling.js';
 import stateData from './app/services/stateData.js';
 
 
-vue.use(vueRouter);
+Vue.use(vueRouter);
 
 const routes = [
-    {path: '/chapter/:name', component: chapter},
-    {path: '/lection/:name', component: lection}
+    { path: '/', component: index },
+    { path: '/:chapterId', component: chapter },
+    { path: '/:chapterId/:sectionId', component: lection }
 ];
 const router = new vueRouter({
-    routes // short for routes: routes
+    routes
 });
 
-const app = new vue({
+const app = new Vue({
     router,
+    el: '#app',
     data: {
         menupoints: {},
         chapterRoute: "/chapter/",
         lectionRoute: "/lection/"
     },
     methods: {
-        goChapter: function (chapter) {
-            this.$router.push({path: '/chapter/' + chapter.name});
+        goToChapter(chapter) {
+            this.$router.push({ path: '/chapter/' + chapter.name });
         },
-        goLection: function (lection) {
+        goLection(lection) {
             this.$router.push({path: '/lection/' + lection.name});
         }
     },
-    created: function () {
+    created() {
         data.getChapters().then((result)=> {
 
             let std = new stateData();
@@ -43,4 +48,4 @@ const app = new vue({
             }, 200)
         });
     }
-}).$mount('#app');
+});
