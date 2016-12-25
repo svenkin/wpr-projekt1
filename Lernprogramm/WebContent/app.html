@@ -44,8 +44,11 @@
                 <span class="mdl-layout-title">Lernprogramm</span>
                 <span v-if="!menupoints.data" class="mdl-layout-title">Menüpunkte laden</span>
                 <span v-if="menupoints.data" v-for="point in menupoints.data" class="mdl-navigation">
-                    <a v-if="menupoints.data" class="mdl-navigation__link" v-on:click="goChapter(point)">{{point.name}}</a>
-                    <a v-if="menupoints.data" v-for="lection in point.lections" class="mdl-navigation__link" v-on:click="goLection(lection)">{{lection.name}}</a>
+                    <a v-if="menupoints.data" class="mdl-navigation__link" v-on:click="goToChapter(point)">{{point.name}}</a>
+                    <a v-if="menupoints.data" v-for="lection in point.lections" class="mdl-navigation__link" v-on:click="goToLection(lection)">{{lection.name}}</a>
+                </span>
+                <span class="mdl-navigation">
+                    <a class="mdl-navigation__link" to="3/3/exam">Examen</a>
                 </span>
             </div>
             -->

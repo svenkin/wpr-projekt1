@@ -7,9 +7,26 @@ export default {
                             data: [
                                 {
                                     name: "Kapitel",
-                                    lections: [
+                                    description: "",
+                                    sections: [
                                         {
-                                            name: "Lektion 1"
+                                            name: "Lektion 1",
+                                            description : "lala",
+                                            lections : [
+                                              {
+                                                name : "das",
+                                                description: "lorem"
+                                              }
+                                            ],
+                                            exam: {
+                                              description: "lorem",
+                                              questions: [
+                                                {
+                                                  type: "radio",
+                                                  question: "lala ?"
+                                                }
+                                              ]
+                                            }
                                         },
                                         {
                                             name: "Lektion 2"
