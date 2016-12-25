@@ -2,22 +2,20 @@ package model;
 
 import java.io.Serializable;
 
-public class Chapter implements Serializable {
+public class Section implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String id;
 	private String title;
-	private String banner;
 	private String description;
 	
-	public Chapter() {
+	public Section() {
 		//
 	}
 	
-	public Chapter(String id, String title, String banner, String description) {
+	public Section(String id, String title, String description) {
 		this.id = id;
 		this.title = title;
-		this.banner = banner;
 		this.description = description;
 	}
 
@@ -35,14 +33,6 @@ public class Chapter implements Serializable {
 
 	public void setTitle(String title) {
 		this.title = title;
-	}
-
-	public String getBanner() {
-		return banner;
-	}
-
-	public void setBanner(String banner) {
-		this.banner = banner;
 	}
 
 	public String getDescription() {

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>Index</title>
     <link rel="stylesheet" href="node_modules/material-design-lite/material.min.css">
     <link rel="stylesheet" href="node_modules/material-design-icons/iconfont/material-icons.css">
 
@@ -11,44 +11,22 @@
 </head>
 
 <body>
-
-
-<div id="app">
-    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-        <header class="mdl-layout__header">
-            <div class="mdl-layout__header-row">
-                <!-- Title -->
-                <span class="mdl-layout-title">Title</span>
-                <!-- Add spacer, to align navigation to the right -->
-                <div class="mdl-layout-spacer"></div>
-                <!-- Navigation. We hide it in small screens. -->
-                <nav class="mdl-navigation mdl-layout--large-screen-only">
-
-                    <a class="mdl-navigation__link" href="">Link</a>
-                    <a class="mdl-navigation__link" href="">Link</a>
-                    <a class="mdl-navigation__link" href="">Link</a>
-                    <a class="mdl-navigation__link" href="">Link</a>
-                </nav>
-            </div>
-        </header>
-        <div class="mdl-layout__drawer">
-            <span class="mdl-layout-title">Title</span>
-            <span v-if="!menupoints.data" class="mdl-layout-title">Menüpunkte laden</span>
-            <span v-if="menupoints.data" v-for="point in menupoints.data" class="mdl-navigation">
-                <a v-if="menupoints.data" class="mdl-navigation__link" v-on:click="goChapter(point)">{{point.name}}</a>
-                <a v-if="menupoints.data" v-for="lection in point.lections" class="mdl-navigation__link" v-on:click="goLection(lection)">{{lection.name}}</a>
-            </span>
+    <div>
+        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <header class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <span class="mdl-layout-title">Lernprogramm</span>
+                </div>
+            </header>
+            <main class="mdl-layout__content">
+                <div class="page-content">
+                    INDEX
+                </div>
+            </main>
         </div>
-        <main class="mdl-layout__content">
-            <div class="page-content" style="padding:20px 100px;">
-                <router-view></router-view>
-            </div>
-        </main>
     </div>
-</div>
 
-<script src="node_modules/material-design-lite/material.min.js"></script>
-<script src="dist/bundle.js"></script>
+    <script src="node_modules/material-design-lite/material.min.js"></script>
 </body>
 
 </html>

@@ -3,9 +3,28 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>Lernprogramm</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
     <link rel="stylesheet" href="node_modules/material-design-lite/material.min.css">
     <link rel="stylesheet" href="node_modules/material-design-icons/iconfont/material-icons.css">
+
+    <style>
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .mdl-layout__header-row {
+            padding-left: 16px;
+        }
+
+        .mdl-navigation__link {
+            text-transform: uppercase;
+        }
+
+        .mdl-grid {
+            max-width: 1024px;
+        }
+    </style>
 </head>
 
 <body>
@@ -13,20 +32,26 @@
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
             <header class="mdl-layout__header">
                 <div class="mdl-layout__header-row">
-                    <span class="mdl-layout-title">Title</span>
+                    <span class="mdl-layout-title">Lernprogramm</span>
+                    <div class="mdl-layout-spacer"></div>
+                    <nav class="mdl-navigation mdl-layout--large-screen-only">
+                        <a class="mdl-navigation__link" href="logout">Abmelden</a>
+                    </nav>
                 </div>
             </header>
+            <!--
             <div class="mdl-layout__drawer">
-                <span class="mdl-layout-title">Title</span>
+                <span class="mdl-layout-title">Lernprogramm</span>
                 <span v-if="!menupoints.data" class="mdl-layout-title">Menüpunkte laden</span>
                 <span v-if="menupoints.data" v-for="point in menupoints.data" class="mdl-navigation">
                     <a v-if="menupoints.data" class="mdl-navigation__link" v-on:click="goChapter(point)">{{point.name}}</a>
                     <a v-if="menupoints.data" v-for="lection in point.lections" class="mdl-navigation__link" v-on:click="goLection(lection)">{{lection.name}}</a>
                 </span>
             </div>
+            -->
             <main class="mdl-layout__content">
-                <div class="page-content" style="padding:20px 100px;">
-                    <router-view></router-view>
+                <div class="page-content">
+                    <router-view @gotochapter="goToChapter($event)" :state="state"></router-view>
                 </div>
             </main>
         </div>

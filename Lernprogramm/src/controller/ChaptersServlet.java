@@ -27,7 +27,8 @@ public class ChaptersServlet extends HttpServlet {
 	
 	@Resource
 	private DataSource dataSource;
-	private String chapterSql = "SELECT id, title, description FROM chapter;";
+	private String chaptersSql = "SELECT id, title, banner, description FROM chapter;";
+	private String chaptersByIdSql = "SELECT title, banner, description FROM chapter WHERE id=?;";
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json");
@@ -44,6 +45,7 @@ public class ChaptersServlet extends HttpServlet {
 				data.add(Json.createObjectBuilder()
 						.add("id", c.getId())
 						.add("title", c.getTitle())
+						.add("banner", c.getBanner())
 						.add("description", c.getDescription()));
 			}
 			structure = Json.createObjectBuilder().add("data", data).build();
@@ -55,10 +57,15 @@ public class ChaptersServlet extends HttpServlet {
 		List<Chapter> chapters = null;
 		try (Connection con = this.dataSource.getConnection();
 			 Statement statement = con.createStatement();
-			 ResultSet rs = statement.executeQuery(this.chapterSql)) {
+			 ResultSet rs = statement.executeQuery(this.chaptersSql)) {
 			chapters = new ArrayList<>();
 			while (rs.next()) {
-				chapters.add(new Chapter(rs.getString("id"), rs.getString("title"), rs.getString("description")));
+				chapters.add(new Chapter(
+						rs.getString("id"),
+						rs.getString("title"),
+						rs.getString("banner"),
+						rs.getString("description")
+				));
 			}
 		} catch (SQLException e) {
 			for (Throwable t : e.getSuppressed()) t.printStackTrace();
