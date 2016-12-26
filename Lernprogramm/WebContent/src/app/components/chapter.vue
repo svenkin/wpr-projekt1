@@ -44,3 +44,13 @@ function created() {
         });
 }
 </script>
+
+<style scoped>
+.mdl-card__title {
+    height: 500px;
+    color: #fff;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover
+}
+</style>

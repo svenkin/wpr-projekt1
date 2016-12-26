@@ -28,7 +28,6 @@ public class ChaptersServlet extends HttpServlet {
 	@Resource
 	private DataSource dataSource;
 	private String chaptersSql = "SELECT id, title, banner, description FROM chapter;";
-	private String chaptersByIdSql = "SELECT title, banner, description FROM chapter WHERE id=?;";
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json");

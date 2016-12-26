@@ -9,7 +9,7 @@
                 <p>{{ chapter.description }}</p>
             </div>
             <div class="mdl-card__actions mdl-card--border">
-                <a @click.prevent="goToChapter(chapter)" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+                <a @click.prevent="goToChapter(chapter)" v-mdl-upgrade class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
                     Zum Kapitel {{ chapter.title }}
                 </a>
             </div>
@@ -39,15 +39,15 @@ function goToChapter(chapter) {
 }
 
 function created() {
-    console.log(this.state);
     fetch('chapters', { credentials: 'same-origin' })
         .then(response => {
             if (response.ok) response.json().then(body => this.chapters = body.data);
         });
+    
 }
 </script>
 
-<style>
+<style scoped>
 .mdl-card__title {
     height: 300px;
     color: #fff;

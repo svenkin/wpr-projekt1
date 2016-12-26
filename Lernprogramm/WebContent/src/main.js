@@ -1,6 +1,9 @@
 import Vue from 'vue';
 import router from './routing';
+
+import './app/directives/mdl-upgrade.directive';
 import StateData from './app/services/state-data';
+
 import index from './app/components/index.vue';
 import chapter from './app/components/chapter.vue';
 import lection from './app/components/lection.vue';
