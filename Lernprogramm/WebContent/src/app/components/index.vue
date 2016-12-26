@@ -9,7 +9,9 @@
                 <p>{{ chapter.description }}</p>
             </div>
             <div class="mdl-card__actions mdl-card--border">
-                <a @click.prevent="goToChapter(chapter)" v-mdl-upgrade class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                   @click.prevent="goToChapter(chapter)"
+                   v-mdl-upgrade >
                     Zum Kapitel {{ chapter.title }}
                 </a>
             </div>
@@ -20,8 +22,8 @@
 
 <script>
 export default {
-    data,
     props: ['state'],
+    data,
     methods: {
         goToChapter
     },

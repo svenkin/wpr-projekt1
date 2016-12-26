@@ -3,7 +3,7 @@ import vueRouter from 'vue-router';
 
 import index from './app/components/index.vue';
 import chapter from './app/components/chapter.vue';
-import lection from './app/components/lection.vue';
+import section from './app/components/section.vue';
 import exam from './app/components/exam/exam.vue';
 
 Vue.use(vueRouter);
@@ -19,7 +19,7 @@ const routes = [
     },
     {
         path: '/:chapterId/:sectionId',
-        component: lection
+        component: section
     },
     {
         path: '/:chapterId/:sectionId/exam',

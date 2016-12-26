@@ -54,7 +54,11 @@
             -->
             <main class="mdl-layout__content">
                 <div class="page-content">
-                    <router-view @gotochapter="goToChapter($event)" :state="state"></router-view>
+                    <router-view
+                        @gotochapter="goToChapter($event)"
+                        @gotosection="goToSection($event)"
+                        :state="state">
+                    </router-view>
                 </div>
             </main>
         </div>

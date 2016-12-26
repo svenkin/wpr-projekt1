@@ -10,7 +10,7 @@
             </div>
             <div class="mdl-card__actions mdl-card--border">
                 <ul class="mdl-list">
-                    <li v-for="section in sections" class="mdl-list__item mdl-list__item--three-line">
+                    <li v-for="section in sections" @click.prevent="goToSection(section)" class="mdl-list__item mdl-list__item--three-line">
                         <span class="mdl-list__item-primary-content">
                         <span>{{ section.title }}</span>
                         <span class="mdl-list__item-text-body">{{ section.description }}</span>
@@ -27,6 +27,9 @@
 export default {
     props: ['state'],
     data,
+    methods: {
+        goToSection
+    },
     created
 }
 
@@ -37,8 +40,12 @@ function data() {
     };
 }
 
+function goToSection(section) {
+    this.$emit('gotosection', section);
+}
+
 function created() {
-    fetch(`sections?chapter-id=${this.$route.params.chapterId}`, { credentials: 'same-origin' })
+    fetch(`sections?chapter-id=${this.chapter.id}`, { credentials: 'same-origin' })
         .then(response => {
             if (response.ok) response.json().then(body => this.sections = body.data);
         });
@@ -52,5 +59,10 @@ function created() {
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover
+}
+
+.mdl-list__item:hover {
+    background-color: rgba(158,158,158,.2);
+    cursor: pointer;
 }
 </style>
