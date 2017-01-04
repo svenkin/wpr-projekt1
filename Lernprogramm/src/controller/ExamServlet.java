@@ -27,11 +27,12 @@ import model.ChoicesQuestion;
 import model.Exam;
 import model.Question;
 import model.QuestionType;
+import model.TextQuestion;
 
 /**
  * Servlet implementation class ExamServlet
  */
-@WebServlet("/ExamServlet")
+@WebServlet("/exam")
 public class ExamServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -44,13 +45,13 @@ public class ExamServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String sectionId = request.getParameter("section-id");
-//		if (sectionId != null && !sectionId.isEmpty()) {
+		if (sectionId != null && !sectionId.isEmpty()) {
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");
-			
-			Json.createWriter(response.getWriter()).write(this.getExam("1"));
-//		}
-		
+
+			Json.createWriter(response.getWriter()).write(this.getExam(sectionId));
+		}
+
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -64,41 +65,52 @@ public class ExamServlet extends HttpServlet {
 			statement.setString(1, sectionId);
 			try (ResultSet rs = statement.executeQuery()) {
 				Hashtable<Integer, Question> questions = new Hashtable<>();
-				
+				boolean hasRows = false;
 				while (rs.next()) {
+					hasRows = true;
 					int questionId = rs.getInt("questionId");
-					System.out.println(questionId);
 					if (!questions.containsKey(questionId)) {
 						String type = rs.getString("type");
 						switch (type) {
 						case "MULTIPLE":
-							ChoicesQuestion cq = fillChoicesQuestion(rs, QuestionType.MULTIPLE);
-							questions.put(questionId, cq);
+							ChoicesQuestion multiple = fillChoicesQuestion(rs, QuestionType.MULTIPLE, null);
+							questions.put(questionId, multiple);
 							break;
 						case "SINGLE":
-							ChoicesQuestion cq2 = fillChoicesQuestion(rs, QuestionType.SINGLE);
-							questions.put(questionId, cq2);
+							ChoicesQuestion single = fillChoicesQuestion(rs, QuestionType.SINGLE, null);
+							questions.put(questionId, single);
 							break;
 						case "TEXT":
-							System.out.println("Type Text");
+							TextQuestion text = new TextQuestion(rs.getString("question"), rs.getString("text"),
+									questionId);
+							text.setType(QuestionType.TEXT);
+							questions.put(questionId, text);
 							break;
 						}
 					} else {
-						System.out.println("QuestionId schon vorhanden!");
 						Question question = questions.get(questionId);
 						String type = rs.getString("type");
 						switch (type) {
 						case "MULTIPLE":
-							ChoicesQuestion cq = (ChoicesQuestion) question;
+							ChoicesQuestion multiple = (ChoicesQuestion) question;
 							String text = rs.getString("text");
 							if (!text.isEmpty()) {
 								Choice choice = new Choice(rs.getInt("answerId"), questionId,
 										checkIfCorrect(rs.getInt("correct")), text);
-								cq.addChoice(choice);
-								System.out.println("Added choice to question with type: " + QuestionType.MULTIPLE);
+								multiple.addChoice(choice);
 							}
-							questions.put(questionId, cq);
-							System.out.println("Anzahl choices: " + cq.getChoices().size());
+							questions.put(questionId, multiple);
+							break;
+						case "SINGLE":
+							ChoicesQuestion single = (ChoicesQuestion) question;
+							String singleText = rs.getString("text");
+							if (!singleText.isEmpty()) {
+								Choice choice = new Choice(rs.getInt("answerId"), questionId,
+										checkIfCorrect(rs.getInt("correct")), singleText);
+								single.addChoice(choice);
+							}
+							questions.put(questionId, single);
+							break;
 						}
 					}
 				}
@@ -108,10 +120,15 @@ public class ExamServlet extends HttpServlet {
 					Map.Entry<Integer, Question> entry = it.next();
 					questionsAsList.add(entry.getValue());
 				}
-				//Move to first row to fill exam data
-				rs.first();
-				exam = new Exam(rs.getString("description"), Integer.parseInt(sectionId));
-				exam.setQuestions(questionsAsList);
+				
+				// Move to first row to fill exam data	
+				System.out.println(hasRows);
+				if(hasRows){
+					rs.first();
+					exam = new Exam(rs.getString("description"), Integer.parseInt(sectionId));
+					exam.setQuestions(questionsAsList);
+				}
+				
 				return exam;
 			}
 		} catch (SQLException e) {
@@ -121,30 +138,35 @@ public class ExamServlet extends HttpServlet {
 		}
 		return null;
 	}
-	
-	private JsonStructure getExam(String sectionId){
+
+	private JsonStructure getExam(String sectionId) {
 		JsonStructure structure = null;
 		Exam exam = this.loadExam(sectionId);
-		if(exam != null){
-			Vector<Question> questions= exam.getQuestions();
-			JsonObjectBuilder obj = Json.createObjectBuilder().add("description", exam.getDescription());
+		if (exam != null) {
+			Vector<Question> questions = exam.getQuestions();
+			JsonObjectBuilder examObject = Json.createObjectBuilder().add("description", exam.getDescription());
 			JsonArrayBuilder qs = Json.createArrayBuilder();
 			for (Question question : questions) {
-				if(question.getType().equals(QuestionType.MULTIPLE) || question.getType().equals(QuestionType.SINGLE)){
-					ChoicesQuestion cq = (ChoicesQuestion)question;
+				if (question.getType().equals(QuestionType.MULTIPLE)
+						|| question.getType().equals(QuestionType.SINGLE)) {
+					ChoicesQuestion choicesQuestion = (ChoicesQuestion) question;
 					JsonArrayBuilder choices = Json.createArrayBuilder();
-					for (Choice choice : cq.getChoices()) {
-						choices.add(Json.createObjectBuilder().add("id", choice.getId())
-								.add("text",choice.getText()));
+					for (Choice choice : choicesQuestion.getChoices()) {
+						choices.add(Json.createObjectBuilder().add("id", choice.getId()).add("text", choice.getText()));
 					}
-					qs.add(Json.createObjectBuilder().add("type",  question.getType().toString())
-							.add("text", question.getQuestion())
-							.add("choices", choices));
-					
+					qs.add(Json.createObjectBuilder().add("type", question.getType().toString())
+							.add("text", question.getQuestion()).add("choices", choices).add("questionId", choicesQuestion.getId()));
+
+				} else if (question.getType().equals(QuestionType.TEXT)) {
+					TextQuestion text = (TextQuestion) question;
+					qs.add(Json.createObjectBuilder().add("text", text.getQuestion())
+							.add("type", text.getType().toString()).add("questionId", text.getId()));
 				}
 			}
-			obj.add("questions", qs);
-			structure = Json.createObjectBuilder().add("data", obj).build();
+			examObject.add("questions", qs);
+			structure = Json.createObjectBuilder().add("data", examObject).build();
+		} else {
+			structure = Json.createObjectBuilder().add("data", Json.createObjectBuilder()).build();
 		}
 		return structure;
 	}
@@ -153,16 +175,21 @@ public class ExamServlet extends HttpServlet {
 		return numb > 0;
 	}
 
-	private ChoicesQuestion fillChoicesQuestion(ResultSet rs, QuestionType type) throws SQLException  {
-		ChoicesQuestion cq = new ChoicesQuestion(rs.getString("question"));
-		cq.setType(type);
+	private ChoicesQuestion fillChoicesQuestion(ResultSet rs, QuestionType type, Question quest) throws SQLException {
+		ChoicesQuestion choicesQuestion = null;
+		if (quest != null) {
+			choicesQuestion = (ChoicesQuestion) quest;
+		} else {
+			choicesQuestion = new ChoicesQuestion(rs.getString("question"));
+		}
+		choicesQuestion.setType(type);
+		choicesQuestion.setId(rs.getInt("questionId"));
 		String text = rs.getString("text");
 		if (!text.isEmpty()) {
 			Choice choice = new Choice(rs.getInt("answerId"), rs.getInt("questionId"),
 					checkIfCorrect(rs.getInt("correct")), text);
-			cq.addChoice(choice);
-			System.out.println("Added choice to question with type: " + QuestionType.MULTIPLE);
+			choicesQuestion.addChoice(choice);
 		}
-		return cq;
+		return choicesQuestion;
 	}
 }

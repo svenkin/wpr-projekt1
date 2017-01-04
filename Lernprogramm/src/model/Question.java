@@ -1,12 +1,16 @@
 package model;
 
-
 public class Question {
 	private String question;
 	private QuestionType type;
-	
-	public Question(String question) {
+	private int id;
+
+	public Question(String question){
 		this.question = question;
+	}
+	public Question(String question, int id) {
+		this.question = question;
+		this.id = id;
 	}
 
 	public String getQuestion() {
@@ -23,5 +27,13 @@ public class Question {
 
 	public void setType(QuestionType type) {
 		this.type = type;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 }
