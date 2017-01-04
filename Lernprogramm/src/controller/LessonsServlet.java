@@ -29,7 +29,7 @@ public class LessonsServlet extends HttpServlet {
 	
 	@Resource
 	private DataSource dataSource;
-	private String lessonBySectionIdSql = "SELECT `order`, title, text_content, image, image_description FROM lesson WHERE section_id=?;";
+	private String lessonBySectionIdSql = "SELECT `order`, title, text_content, image, image_description FROM lesson WHERE section_id=? ORDER BY `order`;";
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String sectionId = request.getParameter("section-id");

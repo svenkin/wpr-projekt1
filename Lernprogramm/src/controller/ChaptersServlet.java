@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import model.Chapter;
+import model.User;
 
 @WebServlet("/chapters")
 public class ChaptersServlet extends HttpServlet {
@@ -28,7 +29,7 @@ public class ChaptersServlet extends HttpServlet {
 	
 	@Resource
 	private DataSource dataSource;
-	private String chaptersSql = "SELECT id, title, banner, description FROM chapter;";
+	private String chaptersSql = "SELECT id, title, banner, description FROM chapter ORDER BY `order`;";
 	private String chapterSql = "SELECT id, title, banner, description FROM chapter WHERE id = ?;";
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -37,7 +38,7 @@ public class ChaptersServlet extends HttpServlet {
 		if (chapterId != null && !chapterId.isEmpty()) {
 			body = this.getChapter(chapterId);
 		} else {
-			body = this.getChapters();
+			body = this.getChapters((User) request.getSession().getAttribute("user"));
 		}
 		
 		response.setContentType("application/json");
@@ -45,17 +46,20 @@ public class ChaptersServlet extends HttpServlet {
 		Json.createWriter(response.getWriter()).write(body);
 	}
 
-	private JsonStructure getChapters() {
+	private JsonStructure getChapters(User user) {
 		JsonStructure structure = null;
 		List<Chapter> chapters = this.loadChapters();
 		if (chapters != null) {
 			JsonArrayBuilder data = Json.createArrayBuilder();
+			boolean access = true;
 			for (Chapter c : chapters) {
 				data.add(Json.createObjectBuilder()
 						.add("id", c.getId())
 						.add("title", c.getTitle())
 						.add("banner", c.getBanner())
-						.add("description", c.getDescription()));
+						.add("description", c.getDescription())
+						.add("access", access));
+				if (user.getAccessChapterId().equals(c.getId())) access = false;
 			}
 			structure = Json.createObjectBuilder().add("data", data).build();
 		}

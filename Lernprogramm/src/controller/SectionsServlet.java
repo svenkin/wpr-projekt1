@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import model.Section;
+import model.User;
 
 @WebServlet("/sections")
 public class SectionsServlet extends HttpServlet {
@@ -27,7 +28,7 @@ public class SectionsServlet extends HttpServlet {
 	
 	@Resource
 	private DataSource dataSource;
-	private String sectionsSql = "SELECT id, title, description FROM section WHERE chapter_id = ?;";
+	private String sectionsSql = "SELECT id, title, description FROM section WHERE chapter_id = ? ORDER BY `order`;";
 	private String sectionSql = "SELECT id, title, description FROM section WHERE chapter_id = ? AND id = ?;";
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -38,7 +39,7 @@ public class SectionsServlet extends HttpServlet {
 			if (sectionId != null && !sectionId.isEmpty()) {
 				body = this.getSection(chapterId, sectionId);
 			} else {
-				body = this.getSections(chapterId);
+				body = this.getSections(chapterId, (User) request.getSession().getAttribute("user"));
 			}
 			
 			response.setContentType("application/json");
@@ -47,16 +48,19 @@ public class SectionsServlet extends HttpServlet {
 		}
 	}
 	
-	private JsonStructure getSections(String chapterId) {
+	private JsonStructure getSections(String chapterId, User user) {
 		JsonStructure structure = null;
 		List<Section> sections = this.loadSections(chapterId);
 		if (sections != null) {
 			JsonArrayBuilder data = Json.createArrayBuilder();
+			boolean access = true;
 			for (Section s : sections) {
 				data.add(Json.createObjectBuilder()
 						.add("id", s.getId())
 						.add("title", s.getTitle())
-						.add("description", s.getDescription()));
+						.add("description", s.getDescription())
+						.add("access", access));
+				if (user.getAccessSectionId().equals(s.getId())) access = false;
 			}
 			structure = Json.createObjectBuilder().add("data", data).build();
 		}

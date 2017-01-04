@@ -24,7 +24,7 @@ public class LoginServlet extends HttpServlet {
 	
 	@Resource
 	private DataSource dataSource;
-	private String loginUserSql = "SELECT first_name, last_name, gender, nick_name, password FROM user WHERE nick_name=?;";
+	private String loginUserSql = "SELECT first_name, last_name, gender, nick_name, password, access_chapter, access_section FROM user WHERE nick_name=?;";
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String nickName = request.getParameter("nick-name");
@@ -44,7 +44,14 @@ public class LoginServlet extends HttpServlet {
 			 PreparedStatement statement = con.prepareStatement(this.loginUserSql)) {
 			statement.setString(1, nickName);
 			try (ResultSet rs = statement.executeQuery()) {
-				if (rs.next()) user = new User(rs.getString(1), rs.getString(2), Gender.valueOf(rs.getString(3)), rs.getString(4), rs.getString(5));
+				if (rs.next()) user = new User(
+						rs.getString("first_name"),
+						rs.getString("last_name"),
+						Gender.valueOf(rs.getString("gender")),
+						rs.getString("nick_name"),
+						rs.getString("password"),
+						rs.getString("access_chapter"),
+						rs.getString("access_section"));
 			}
 		} catch (SQLException e) {
 			for (Throwable t : e.getSuppressed()) t.printStackTrace();

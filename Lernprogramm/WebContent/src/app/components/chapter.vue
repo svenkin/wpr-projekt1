@@ -2,7 +2,7 @@
 <section>
     <div v-if="chapter" class="mdl-grid">
         <div class="mdl-card mdl-cell mdl-cell--12-col mdl-shadow--2dp">
-            <div v-bind:style="{ backgroundImage: `url(res/${chapter.banner})` }" class="mdl-card__title">
+            <div :style="{ backgroundImage: `url(res/${chapter.banner})` }" class="mdl-card__title">
                 <h3 class="mdl-card__title-text">{{ chapter.title }}</h3>
             </div>
             <div class="mdl-card__supporting-text">
@@ -10,7 +10,10 @@
             </div>
             <div class="mdl-card__actions mdl-card--border">
                 <ul class="mdl-list">
-                    <li v-for="section in sections" @click.prevent="goToSection(chapter, section)" class="mdl-list__item mdl-list__item--three-line">
+                    <li v-for="section in sections"
+                        @click.prevent="goToSection(chapter, section)"
+                        :class="{ disabled: !section.access }"
+                        class="mdl-list__item mdl-list__item--three-line">
                         <span class="mdl-list__item-primary-content">
                         <span>{{ section.title }}</span>
                         <span class="mdl-list__item-text-body">{{ section.description }}</span>
@@ -69,5 +72,10 @@ function created() {
 .mdl-list__item:hover {
     background-color: rgba(158,158,158,.2);
     cursor: pointer;
+}
+
+.disabled {
+    color: rgba(0,0,0,.26);
+    cursor: default;
 }
 </style>

@@ -2,17 +2,18 @@
 <section>
     <div v-if="chapters.length" class="mdl-grid">
         <div v-for="chapter in chapters" class="mdl-card mdl-cell mdl-cell--6-col mdl-shadow--2dp">
-            <div v-bind:style="{ backgroundImage: `url(res/${chapter.banner})` }" class="mdl-card__title">
+            <div :style="{ backgroundImage: `url(res/${chapter.banner})` }" class="mdl-card__title">
                 <h3 class="mdl-card__title-text">{{ chapter.title }}</h3>
             </div>
             <div class="mdl-card__supporting-text">
                 <p>{{ chapter.description }}</p>
             </div>
             <div class="mdl-card__actions mdl-card--border">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                <a :disabled="!chapter.access"
                    @click.prevent="goToChapter(chapter)"
-                   v-mdl-upgrade >
-                    Zum Kapitel {{ chapter.title }}
+                   v-mdl-upgrade
+                   class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+                    Zum Kapitel {{ chapter.title }} <span v-if="!chapter.access">(Noch nicht verfügbar)</span>
                 </a>
             </div>
         </div>
@@ -36,7 +37,7 @@ function data() {
 }
 
 function goToChapter(chapter) {
-    this.$emit('gotochapter', { chapter });
+    if (chapter.access) this.$emit('gotochapter', { chapter });
 }
 
 function created() {

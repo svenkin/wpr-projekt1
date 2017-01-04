@@ -59,9 +59,6 @@ function created() {
         .then(response => {
             if (response.ok) return response.json();
         })
-        .then(body => {
-            body.data.sort((a, b) => a.order - b.order);
-            this.lessons = body.data;
-        });
+        .then(body => this.lessons = body.data);
 }
 </script>
