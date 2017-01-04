@@ -17,4 +17,9 @@ public class TextQuestion extends Question {
 		this.keywords = keywords;
 	}
 
+	public TextQuestion(String question) {
+		super(question);
+		// TODO Auto-generated constructor stub
+	}
+
 }

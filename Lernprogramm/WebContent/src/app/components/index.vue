@@ -22,7 +22,6 @@
 
 <script>
 export default {
-    props: ['state'],
     data,
     methods: {
         goToChapter
@@ -37,7 +36,7 @@ function data() {
 }
 
 function goToChapter(chapter) {
-    this.$emit('gotochapter', chapter);
+    this.$emit('gotochapter', { chapter });
 }
 
 function created() {

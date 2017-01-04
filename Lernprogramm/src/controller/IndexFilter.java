@@ -20,8 +20,9 @@ public class IndexFilter implements Filter {
 	}
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		if (((HttpServletRequest) request).getSession(false) != null) ((HttpServletResponse) response).sendRedirect("app.html");
-		else chain.doFilter(request, response);
+		HttpServletResponse httpResponse = (HttpServletResponse) response;
+		if (((HttpServletRequest) request).getSession(false) != null) httpResponse.sendRedirect("app.html");
+		else httpResponse.sendRedirect("register.html");
 	}
 
 	public void init(FilterConfig fConfig) throws ServletException {

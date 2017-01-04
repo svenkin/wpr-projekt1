@@ -27,14 +27,23 @@ public class SectionsServlet extends HttpServlet {
 	
 	@Resource
 	private DataSource dataSource;
-	private String sectionsByChapterIdSql = "SELECT id, title, description FROM section WHERE chapter_id=?;";
+	private String sectionsSql = "SELECT id, title, description FROM section WHERE chapter_id = ?;";
+	private String sectionSql = "SELECT id, title, description FROM section WHERE chapter_id = ? AND id = ?;";
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String chapterId = request.getParameter("chapter-id");
+		String sectionId = request.getParameter("section-id");
 		if (chapterId != null && !chapterId.isEmpty()) {
+			JsonStructure body = null;
+			if (sectionId != null && !sectionId.isEmpty()) {
+				body = this.getSection(chapterId, sectionId);
+			} else {
+				body = this.getSections(chapterId);
+			}
+			
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");
-			Json.createWriter(response.getWriter()).write(this.getSections(chapterId));
+			Json.createWriter(response.getWriter()).write(body);
 		}
 	}
 	
@@ -54,10 +63,24 @@ public class SectionsServlet extends HttpServlet {
 		return structure;
 	}
 	
+	private JsonStructure getSection(String chapterId, String sectionId) {
+		JsonStructure structure = null;
+		Section section = this.loadSection(chapterId, sectionId);
+		if (section != null) {
+			structure = Json.createObjectBuilder()
+					.add("data", Json.createObjectBuilder()
+							.add("id", section.getId())
+							.add("title", section.getTitle())
+							.add("description", section.getDescription()))
+					.build();
+		}
+		return structure;
+	}
+	
 	private List<Section> loadSections(String chapterId) {
 		List<Section> sections = null;
 		try (Connection con = this.dataSource.getConnection();
-			 PreparedStatement statement = con.prepareStatement(this.sectionsByChapterIdSql)) {
+			 PreparedStatement statement = con.prepareStatement(this.sectionsSql)) {
 			statement.setString(1, chapterId);
 			try (ResultSet rs = statement.executeQuery()) {
 				sections = new ArrayList<>();
@@ -74,5 +97,26 @@ public class SectionsServlet extends HttpServlet {
 			e.printStackTrace();
 		}
 		return sections;
+	}
+	
+	private Section loadSection(String chapterId, String sectionId) {
+		Section section = null;
+		try (Connection con = this.dataSource.getConnection();
+			 PreparedStatement statement = con.prepareStatement(this.sectionSql)) {
+			statement.setString(1, chapterId);
+			statement.setString(2, sectionId);
+			try (ResultSet rs = statement.executeQuery()) {
+				if (rs.next()) {
+					section = new Section(
+							rs.getString("id"),
+							rs.getString("title"),
+							rs.getString("description"));
+				}
+			}
+		} catch (SQLException e) {
+			for (Throwable t : e.getSuppressed()) t.printStackTrace();
+			e.printStackTrace();
+		}
+		return section;
 	}
 }

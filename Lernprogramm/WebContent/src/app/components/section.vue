@@ -1,6 +1,6 @@
 <template>
 <section>
-    <div class="mdl-grid">
+    <div v-if="section" class="mdl-grid">
         <div v-if="currentLesson" class="mdl-card mdl-cell mdl-cell--12-col mdl-shadow--2dp">
             <div class="mdl-card__title">
                 <h3 class="mdl-card__title-text">{{ section.title }}</h3>
@@ -23,7 +23,6 @@
 
 <script>
 export default {
-    props: ['state'],
     data,
     computed: {
         currentLesson
@@ -36,7 +35,7 @@ export default {
 
 function data() {
     return {
-        section: this.state.section,
+        section: null,
         lessons: [],
         currentLessonIndex: 0
     };
@@ -51,12 +50,18 @@ function nextLesson() {
 }
 
 function created() {
-    fetch(`lessons?section-id=${this.section.id}`, { credentials: 'same-origin' })
+    fetch(`sections?chapter-id=${this.$route.params.chapterId}&section-id=${this.$route.params.sectionId}`, { credentials: 'same-origin' })
         .then(response => {
-            if (response.ok) response.json().then(body => {
-                body.data.sort((a, b) => a.order - b.order);
-                this.lessons = body.data;
-            });
+            if (response.ok) return response.json();
+        })
+        .then(body => this.section = body.data)
+        .then(() => fetch(`lessons?section-id=${this.section.id}`, { credentials: 'same-origin' }))
+        .then(response => {
+            if (response.ok) return response.json();
+        })
+        .then(body => {
+            body.data.sort((a, b) => a.order - b.order);
+            this.lessons = body.data;
         });
 }
 </script>

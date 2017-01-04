@@ -14,21 +14,16 @@ import data from './app/services/dataHandling.js';
 const vm = new Vue({
     router,
     el: '#app',
-    data: {
-        state: StateData.instance
-    },
     methods: {
         goToChapter,
         goToSection
     }
 });
 
-function goToChapter(chapter) {
-    this.state.chapter = chapter;
-    this.$router.push({ path: `/${this.state.chapter.id}` });
+function goToChapter(event) {
+    this.$router.push({ path: `/${event.chapter.id}` });
 }
 
-function goToSection(section) {
-    this.state.section = section;
-    this.$router.push({ path: `/${this.state.chapter.id}/${this.state.section.id}`});
+function goToSection(event) {
+    this.$router.push({ path: `/${event.chapter.id}/${event.section.id}`});
 }

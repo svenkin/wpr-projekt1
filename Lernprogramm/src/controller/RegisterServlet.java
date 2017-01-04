@@ -33,7 +33,7 @@ public class RegisterServlet extends HttpServlet {
 
 		// TODO: Validitäts-Check
 		User newUser = new User(firstName, lastName, gender, nickName, password);
-		if (this.registerUser(newUser)) response.sendRedirect("login.html");
+		if (this.registerUser(newUser)) response.sendRedirect("tutorial.html");
 		else request.getRequestDispatcher("error.html").forward(request, response);
 	}
 
