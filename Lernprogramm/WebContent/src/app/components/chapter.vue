@@ -14,9 +14,11 @@
                         @click.prevent="goToSection(chapter, section)"
                         :class="{ disabled: !section.access }"
                         class="mdl-list__item mdl-list__item--three-line">
-                        <span class="mdl-list__item-primary-content">
+                        <span :class="{ disabled: !section.access }"
+                              class="mdl-list__item-primary-content">
                         <span>{{ section.title }}</span>
-                        <span class="mdl-list__item-text-body">{{ section.description }}</span>
+                        <span :class="{ disabled: !section.access }"
+                              class="mdl-list__item-text-body">{{ section.description }}</span>
                         </span>
                     </li>
                 </ul>
@@ -43,7 +45,7 @@ function data() {
 }
 
 function goToSection(chapter, section) {
-    this.$emit('gotosection', { chapter, section });
+    if (section.access) this.$emit('gotosection', { chapter, section });
 }
 
 function created() {
@@ -77,5 +79,10 @@ function created() {
 .disabled {
     color: rgba(0,0,0,.26);
     cursor: default;
+}
+
+.disabled:hover {
+    background-color: inherit !important;
+    cursor: default !important;
 }
 </style>

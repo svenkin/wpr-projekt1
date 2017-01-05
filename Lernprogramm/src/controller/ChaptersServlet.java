@@ -29,8 +29,8 @@ public class ChaptersServlet extends HttpServlet {
 	
 	@Resource
 	private DataSource dataSource;
-	private String chaptersSql = "SELECT id, title, banner, description FROM chapter ORDER BY `order`;";
-	private String chapterSql = "SELECT id, title, banner, description FROM chapter WHERE id = ?;";
+	private final String chaptersSql = "SELECT id, title, banner, description FROM chapter ORDER BY `order`;";
+	private final String chapterSql = "SELECT id, title, banner, description FROM chapter WHERE id = ?;";
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String chapterId = request.getParameter("chapter-id");
