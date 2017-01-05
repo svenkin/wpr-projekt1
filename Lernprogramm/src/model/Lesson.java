@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class Lesson implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private int order;
 	private String title;
 	private String textContent;
 	private String image;
@@ -15,20 +14,11 @@ public class Lesson implements Serializable {
 		//
 	}
 
-	public Lesson(int order, String title, String textContent, String image, String imageDescription) {
-		this.order = order;
+	public Lesson(String title, String textContent, String image, String imageDescription) {
 		this.title = title;
 		this.textContent = textContent;
 		this.image = image;
 		this.imageDescription = imageDescription;
-	}
-
-	public int getOrder() {
-		return order;
-	}
-
-	public void setOrder(int order) {
-		this.order = order;
 	}
 
 	public String getTitle() {

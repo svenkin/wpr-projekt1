@@ -10,9 +10,18 @@
                 <p>{{ currentLesson.textContent }}</p>
             </div>
             <div class="mdl-card__actions mdl-card--border">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                <a :disabled="!hasPreviousLesson"
+                   @click.prevent="previousLesson()"
+                   v-mdl-upgrade
+                   class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                   style="float: left;">
+                    Zurück
+                </a>
+                <a :disabled="!hasNextLesson"
                    @click.prevent="nextLesson()"
-                   v-mdl-upgrade >
+                   v-mdl-upgrade
+                   class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                   style="float: right;">
                     Weiter
                 </a>
             </div>
@@ -25,10 +34,13 @@
 export default {
     data,
     computed: {
-        currentLesson
+        currentLesson,
+        hasNextLesson,
+        hasPreviousLesson
     },
     methods: {
-        nextLesson
+        nextLesson,
+        previousLesson
     },
     created
 }
@@ -45,8 +57,20 @@ function currentLesson() {
     return this.lessons[this.currentLessonIndex];
 }
 
+function hasPreviousLesson() {
+    return this.currentLessonIndex > 0;
+}
+
+function hasNextLesson() {
+    return this.currentLessonIndex < this.lessons.length - 1;
+}
+
+function previousLesson() {
+    if (this.hasPreviousLesson) this.currentLessonIndex--;
+}
+
 function nextLesson() {
-    this.currentLessonIndex++;
+    if (this.hasNextLesson) this.currentLessonIndex++;
 }
 
 function created() {
@@ -55,7 +79,7 @@ function created() {
             if (response.ok) return response.json();
         })
         .then(body => this.section = body.data)
-        .then(() => fetch(`lessons?section-id=${this.section.id}`, { credentials: 'same-origin' }))
+        .then(() => fetch(`lessons?chapter-id=${this.$route.params.chapterId}&section-id=${this.section.id}`, { credentials: 'same-origin' }))
         .then(response => {
             if (response.ok) return response.json();
         })

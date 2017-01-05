@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 
 import model.Section;
 import model.User;
+import tools.AccessChecker;
 
 @WebServlet("/sections")
 public class SectionsServlet extends HttpServlet {
@@ -28,23 +29,29 @@ public class SectionsServlet extends HttpServlet {
 	
 	@Resource
 	private DataSource dataSource;
-	private String sectionsSql = "SELECT id, title, description FROM section WHERE chapter_id = ? ORDER BY `order`;";
-	private String sectionSql = "SELECT id, title, description FROM section WHERE chapter_id = ? AND id = ?;";
+	private final String sectionsSql = "SELECT id, title, description FROM section WHERE chapter_id = ? ORDER BY `order`;";
+	private final String sectionSql = "SELECT id, title, description FROM section WHERE chapter_id = ? AND id = ?;";
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String chapterId = request.getParameter("chapter-id");
 		String sectionId = request.getParameter("section-id");
-		if (chapterId != null && !chapterId.isEmpty()) {
+		User user = (User) request.getSession().getAttribute("user");
+		if (chapterId != null && !chapterId.isEmpty() && AccessChecker.getInstance().checkAccess(chapterId, user, this.dataSource)) {
 			JsonStructure body = null;
 			if (sectionId != null && !sectionId.isEmpty()) {
 				body = this.getSection(chapterId, sectionId);
 			} else {
-				body = this.getSections(chapterId, (User) request.getSession().getAttribute("user"));
+				body = this.getSections(chapterId, user);
 			}
 			
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");
 			Json.createWriter(response.getWriter()).write(body);
+		} else {
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			Json.createWriter(response.getWriter()).write(Json.createObjectBuilder()
+					.add("error", "access denied")
+					.build());
 		}
 	}
 	

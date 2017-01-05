@@ -9,8 +9,6 @@ import chapter from './app/components/chapter.vue';
 import section from './app/components/section.vue';
 import exam from './app/components/exam/exam.vue';
 
-import data from './app/services/dataHandling.js';
-
 const vm = new Vue({
     router,
     el: '#app',
