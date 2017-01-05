@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,9 +13,13 @@ import java.util.Vector;
 
 import javax.annotation.Resource;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.json.JsonStructure;
+import javax.json.JsonValue;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -25,6 +30,7 @@ import javax.sql.DataSource;
 import model.Choice;
 import model.ChoicesQuestion;
 import model.Exam;
+import model.ExamResult;
 import model.Question;
 import model.QuestionType;
 import model.TextQuestion;
@@ -56,6 +62,64 @@ public class ExamServlet extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		String sectionId = request.getParameter("section-id");
+		if (sectionId != null && !sectionId.isEmpty()) {
+			BufferedReader body = request.getReader();
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			Json.createWriter(response.getWriter()).write(this.getExamResults(sectionId, body));
+		}
+
+	}
+
+	private Vector<ExamResult> checkExamResult(String sectionId, BufferedReader body){
+		Exam exam = loadExam(sectionId);
+		Vector<ExamResult> results = new Vector<>();
+		if(exam != null){
+			Hashtable<Integer, Question> examQuestions = exam.getPremappedQuestions();
+			JsonReader reader = Json.createReader(body);
+			JsonObject obj = reader.readObject();
+			System.out.println(obj.toString());
+			JsonValue val = obj.get("answers");
+			JsonArray answers = (JsonArray)val;
+			for (JsonValue jsonValue : answers) {
+				boolean correct = false;
+				JsonObject objc = (JsonObject)jsonValue;
+				int questionId = objc.getInt("questionId");
+				System.out.println("QuestionId: "+questionId);
+				Question q = examQuestions.get(questionId);
+				System.out.println("QuestionType: "+ q.getType());
+				switch(q.getType().toString()){
+				case "SINGLE":
+					ChoicesQuestion cq = (ChoicesQuestion)q;
+					correct = cq.checkIfChoiceIsCorrect(objc.getInt("answer"));
+					break;
+				case "MULTIPLE":
+					ChoicesQuestion cq2 = (ChoicesQuestion)q;
+					JsonArray ans = objc.getJsonArray("answer");
+					int[] arr = toIntArray(ans);
+					correct = cq2.checkIfChoicesAreCorrect(arr);
+				break;
+				case "TEXT":
+					TextQuestion text = (TextQuestion)q;
+					correct = text.checkForKeywords(objc.getString("answer"));
+					break;
+				}
+				results.add(new ExamResult(q.getQuestion(), correct));
+			}
+		}
+		return results;
+	}
+	
+	private JsonStructure getExamResults(String sectionId, BufferedReader body){
+		Vector<ExamResult> results = checkExamResult(sectionId, body);
+		JsonObjectBuilder build = Json.createObjectBuilder();
+		JsonArrayBuilder array = Json.createArrayBuilder();
+		for (ExamResult examResult : results) {
+			array.add(Json.createObjectBuilder().add("text", examResult.getText()).add("correct", examResult.isCorrect()));
+		}
+		build.add("data", array);
+		return build.build();
 	}
 
 	private Exam loadExam(String sectionId) {
@@ -120,15 +184,16 @@ public class ExamServlet extends HttpServlet {
 					Map.Entry<Integer, Question> entry = it.next();
 					questionsAsList.add(entry.getValue());
 				}
-				
-				// Move to first row to fill exam data	
+
+				// Move to first row to fill exam data
 				System.out.println(hasRows);
-				if(hasRows){
+				if (hasRows) {
 					rs.first();
 					exam = new Exam(rs.getString("description"), Integer.parseInt(sectionId));
+					exam.setPremappedQuestions(questions);
 					exam.setQuestions(questionsAsList);
 				}
-				
+
 				return exam;
 			}
 		} catch (SQLException e) {
@@ -155,7 +220,8 @@ public class ExamServlet extends HttpServlet {
 						choices.add(Json.createObjectBuilder().add("id", choice.getId()).add("text", choice.getText()));
 					}
 					qs.add(Json.createObjectBuilder().add("type", question.getType().toString())
-							.add("text", question.getQuestion()).add("choices", choices).add("questionId", choicesQuestion.getId()));
+							.add("text", question.getQuestion()).add("choices", choices)
+							.add("questionId", choicesQuestion.getId()));
 
 				} else if (question.getType().equals(QuestionType.TEXT)) {
 					TextQuestion text = (TextQuestion) question;
@@ -173,6 +239,17 @@ public class ExamServlet extends HttpServlet {
 
 	private boolean checkIfCorrect(int numb) {
 		return numb > 0;
+	}
+
+	private int[] toIntArray(JsonArray array) {
+		int[] resArray = new int[array.size()];
+		if (array != null) {
+			int len = array.size();
+			for (int i = 0; i < len; i++) {
+				resArray[i] = array.getInt(i);
+			}
+		}
+		return resArray;
 	}
 
 	private ChoicesQuestion fillChoicesQuestion(ResultSet rs, QuestionType type, Question quest) throws SQLException {

@@ -21,4 +21,22 @@ public class ChoicesQuestion extends Question {
 	public boolean addChoice(Choice choice) {
 		return choices.add(choice);
 	}
+	
+	public boolean checkIfChoiceIsCorrect(int choiceId){
+		boolean correct = false;
+		for (Choice choice : choices) {
+			if(choice.isCorrect() && choiceId == choice.getId()) correct = true;
+		}
+		return correct;
+	}
+	
+	public boolean checkIfChoicesAreCorrect(int[] choiceId){
+		int correctCount = 0;
+		for (Choice choice : choices) {
+			for (int i = 0; i < choiceId.length; i++) {
+				if(choice.isCorrect() && choiceId[i] == choice.getId()) correctCount++;
+			}
+		}
+		return correctCount==choiceId.length;
+	}
 }

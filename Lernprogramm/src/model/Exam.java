@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
@@ -11,6 +12,7 @@ public class Exam implements Serializable {
 	private String description;
 	private int sectionId;
 	private Vector<Question> questions;
+	private Hashtable<Integer, Question> premappedQuestions;
 	
 	public Exam(){}
 	
@@ -42,4 +44,14 @@ public class Exam implements Serializable {
 	public void setSectionId(int sectionId) {
 		this.sectionId = sectionId;
 	}
+
+	public Hashtable<Integer, Question> getPremappedQuestions() {
+		return premappedQuestions;
+	}
+
+	public void setPremappedQuestions(Hashtable<Integer, Question> premappedQuestions) {
+		this.premappedQuestions = premappedQuestions;
+	}
+	
+	
 }

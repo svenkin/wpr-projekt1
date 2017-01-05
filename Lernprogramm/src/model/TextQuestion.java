@@ -19,7 +19,17 @@ public class TextQuestion extends Question {
 
 	public TextQuestion(String question) {
 		super(question);
-		// TODO Auto-generated constructor stub
+	}
+	
+	public boolean checkForKeywords(String words){
+		String[] cutWords = words.split(" ");
+		System.out.println(words);
+		int correct = 0;
+		for (String string : cutWords) {
+			System.out.println(string);
+			if(keywords.contains(string)) correct++;
+		}
+		return correct == cutWords.length;
 	}
 
 }
