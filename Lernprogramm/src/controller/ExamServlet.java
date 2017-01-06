@@ -72,36 +72,36 @@ public class ExamServlet extends HttpServlet {
 
 	}
 
-	private Vector<ExamResult> checkExamResult(String sectionId, BufferedReader body){
+	private Vector<ExamResult> checkExamResult(String sectionId, BufferedReader body) {
 		Exam exam = loadExam(sectionId);
 		Vector<ExamResult> results = new Vector<>();
-		if(exam != null){
+		if (exam != null) {
 			Hashtable<Integer, Question> examQuestions = exam.getPremappedQuestions();
 			JsonReader reader = Json.createReader(body);
 			JsonObject obj = reader.readObject();
-			System.out.println(obj.toString());
 			JsonValue val = obj.get("answers");
-			JsonArray answers = (JsonArray)val;
+			JsonArray answers = (JsonArray) val;
+			// For each answer in the answers array
 			for (JsonValue jsonValue : answers) {
 				boolean correct = false;
-				JsonObject objc = (JsonObject)jsonValue;
+				JsonObject objc = (JsonObject) jsonValue;
 				int questionId = objc.getInt("questionId");
-				System.out.println("QuestionId: "+questionId);
 				Question q = examQuestions.get(questionId);
-				System.out.println("QuestionType: "+ q.getType());
-				switch(q.getType().toString()){
+				// Depending on question type cast the question and check if
+				// correctly answered
+				switch (q.getType().toString()) {
 				case "SINGLE":
-					ChoicesQuestion cq = (ChoicesQuestion)q;
+					ChoicesQuestion cq = (ChoicesQuestion) q;
 					correct = cq.checkIfChoiceIsCorrect(objc.getInt("answer"));
 					break;
 				case "MULTIPLE":
-					ChoicesQuestion cq2 = (ChoicesQuestion)q;
+					ChoicesQuestion cq2 = (ChoicesQuestion) q;
 					JsonArray ans = objc.getJsonArray("answer");
 					int[] arr = toIntArray(ans);
 					correct = cq2.checkIfChoicesAreCorrect(arr);
-				break;
+					break;
 				case "TEXT":
-					TextQuestion text = (TextQuestion)q;
+					TextQuestion text = (TextQuestion) q;
 					correct = text.checkForKeywords(objc.getString("answer"));
 					break;
 				}
@@ -110,13 +110,14 @@ public class ExamServlet extends HttpServlet {
 		}
 		return results;
 	}
-	
-	private JsonStructure getExamResults(String sectionId, BufferedReader body){
+
+	private JsonStructure getExamResults(String sectionId, BufferedReader body) {
 		Vector<ExamResult> results = checkExamResult(sectionId, body);
 		JsonObjectBuilder build = Json.createObjectBuilder();
 		JsonArrayBuilder array = Json.createArrayBuilder();
 		for (ExamResult examResult : results) {
-			array.add(Json.createObjectBuilder().add("text", examResult.getText()).add("correct", examResult.isCorrect()));
+			array.add(Json.createObjectBuilder().add("text", examResult.getText()).add("correct",
+					examResult.isCorrect()));
 		}
 		build.add("data", array);
 		return build.build();
@@ -133,6 +134,10 @@ public class ExamServlet extends HttpServlet {
 				while (rs.next()) {
 					hasRows = true;
 					int questionId = rs.getInt("questionId");
+					// If question doesnt exist yet, add question to hashtable
+					// with id as key
+					// If question already exist, only add the choice to the
+					// existing question
 					if (!questions.containsKey(questionId)) {
 						String type = rs.getString("type");
 						switch (type) {
@@ -178,6 +183,8 @@ public class ExamServlet extends HttpServlet {
 						}
 					}
 				}
+				// Hashtable only used for easier check if question already
+				// exists, map it to vector
 				Iterator<Map.Entry<Integer, Question>> it = questions.entrySet().iterator();
 				Vector<Question> questionsAsList = new Vector<>();
 				while (it.hasNext()) {

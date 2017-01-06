@@ -13,9 +13,10 @@ public class Exam implements Serializable {
 	private int sectionId;
 	private Vector<Question> questions;
 	private Hashtable<Integer, Question> premappedQuestions;
-	
-	public Exam(){}
-	
+
+	public Exam() {
+	}
+
 	public Exam(String description, int sectionId) {
 		this.description = description;
 		this.sectionId = sectionId;
@@ -52,6 +53,5 @@ public class Exam implements Serializable {
 	public void setPremappedQuestions(Hashtable<Integer, Question> premappedQuestions) {
 		this.premappedQuestions = premappedQuestions;
 	}
-	
-	
+
 }

@@ -1,11 +1,11 @@
 <template>
-  <div class="exam-progress">
-    <div class="bar">
-      <div class="bg"></div>
-      <div class="progress" v-bind:style="{width : width}"></div>
+    <div class="exam-progress">
+        <div class="bar">
+            <div class="bg"></div>
+            <div class="progress" v-bind:style="{width : width}"></div>
+        </div>
+        Frage {{current}} von {{max}}
     </div>
-    Frage {{current}} von {{max}}
-  </div>
 </template>
 
 <style scoped>
@@ -34,6 +34,7 @@
   background-color: #3f51b5;
   position: absolute;
 }
+
 </style>
 <script>
 
@@ -50,6 +51,14 @@ export default{
             this.width = ((100/this.max)*value)+'%';
           }
         }
+      },
+  created
+}
+
+function created(){
+    //Set width on init
+    if(this.current >= 0 && this.max >= this.current){
+        this.width = ((100/this.max)*this.current)+'%';
       }
 }
 </script>

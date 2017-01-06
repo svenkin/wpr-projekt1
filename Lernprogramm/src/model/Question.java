@@ -5,9 +5,10 @@ public class Question {
 	private QuestionType type;
 	private int id;
 
-	public Question(String question){
+	public Question(String question) {
 		this.question = question;
 	}
+
 	public Question(String question, int id) {
 		this.question = question;
 		this.id = id;

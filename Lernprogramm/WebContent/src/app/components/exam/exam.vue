@@ -83,17 +83,14 @@ function created() {
         }
     }
 function updateIndex(){
-    console.log(this.questionNumber);
     this.questionNumber++;
 }
 
 function updateExamResult(result){
-    console.log('Result', result);
-    this.examAnswers.answers.push(result[0]);
+    this.examAnswers.answers.push(result);
 }
 
 function finishExam(){
-console.log('finishExam2');
     fetch(`exam?section-id=${this.$route.params.sectionId}`,
     {
         headers: {
@@ -111,7 +108,8 @@ console.log('finishExam2');
 }
 
 function toOverview(){
-    this.$router.push({ path: `/${this.$route.params.chapterId}/${this.$route.params.sectionId}` });
+    this.$router.push({ path: `/${this.$route.params.chapterId}`});
 }
+
 
 </script>
