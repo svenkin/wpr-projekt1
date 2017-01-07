@@ -36,6 +36,7 @@ public class SectionsServlet extends HttpServlet {
 		String chapterId = request.getParameter("chapter-id");
 		String sectionId = request.getParameter("section-id");
 		User user = (User) request.getSession().getAttribute("user");
+		System.out.println("User acces: "+user.getAccessSectionId()+"|"+user.getAccessChapterId());
 		if (chapterId != null && !chapterId.isEmpty() && AccessChecker.getInstance().checkAccess(chapterId, user, this.dataSource)) {
 			JsonStructure body = null;
 			if (sectionId != null && !sectionId.isEmpty()) {

@@ -34,6 +34,7 @@ import model.ExamResult;
 import model.Question;
 import model.QuestionType;
 import model.TextQuestion;
+import model.User;
 
 /**
  * Servlet implementation class ExamServlet
@@ -47,14 +48,19 @@ public class ExamServlet extends HttpServlet {
 	private String selectExamBySectionId = "SELECT lernprogramm.exam.description, lernprogramm.question.question, lernprogramm.question.type, lernprogramm.answer.text, lernprogramm.answer.id as answerId, lernprogramm.answer.correct, lernprogramm.question.id as questionId"
 			+ " FROM lernprogramm.exam JOIN lernprogramm.question ON lernprogramm.exam.id = question.exam_id"
 			+ " JOIN lernprogramm.answer ON lernprogramm.question.id = answer.question_id WHERE exam.section_id = ?;";
+	private String selectNextSection = "Select section.order, section.id from section where section.order > (Select section.order from section Where section.id = ?) limit 1;";
+	private String updateUserAccessSection = "UPDATE user set access_section = ? Where nick_name = ?;";
+	private String selectNextChapter = "Select chapter.order, chapter.id from chapter where chapter.order > ? limit 1;";
+	private String updateUserAccessChapter = "UPDATE user set access_chapter = ? Where nick_name = ?;";
+	private String selectFirstSection = "Select * from section where chapter_id = ? Order by section.order limit 1;";
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String sectionId = request.getParameter("section-id");
+
 		if (sectionId != null && !sectionId.isEmpty()) {
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");
-
 			Json.createWriter(response.getWriter()).write(this.getExam(sectionId));
 		}
 
@@ -63,7 +69,14 @@ public class ExamServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String sectionId = request.getParameter("section-id");
-		if (sectionId != null && !sectionId.isEmpty()) {
+		String chapterId = request.getParameter("chapter-id");
+		User currentUser = (User) request.getSession().getAttribute("user");
+		if (sectionId != null && !sectionId.isEmpty() && chapterId != null && !chapterId.isEmpty()
+				&& currentUser != null) {
+			User updatedUser = this.updateUserAccess(sectionId, chapterId, currentUser);
+			System.out.println(
+					"User from update: " + updatedUser.getAccessSectionId() + "|" + updatedUser.getAccessChapterId());
+			request.getSession().setAttribute("user", updatedUser);
 			BufferedReader body = request.getReader();
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");
@@ -193,7 +206,6 @@ public class ExamServlet extends HttpServlet {
 				}
 
 				// Move to first row to fill exam data
-				System.out.println(hasRows);
 				if (hasRows) {
 					rs.first();
 					exam = new Exam(rs.getString("description"), Integer.parseInt(sectionId));
@@ -275,5 +287,80 @@ public class ExamServlet extends HttpServlet {
 			choicesQuestion.addChoice(choice);
 		}
 		return choicesQuestion;
+	}
+
+	private User updateUserAccess(String sectionId, String chapterId, User user) {
+		try (Connection con = this.dataSource.getConnection();
+				PreparedStatement statement = con.prepareStatement(this.selectNextSection)) {
+			statement.setString(1, chapterId);
+			try (ResultSet rs = statement.executeQuery()) {
+				if (!rs.next()) {
+					System.out.println("Keine nächste Section!");
+					// Fetch next chapter id
+					if (user.getAccessChapterId().equals(chapterId)) {
+						PreparedStatement stmnt = con.prepareStatement(this.selectNextChapter);
+						stmnt.setString(1, chapterId);
+						try (ResultSet chaptRes = stmnt.executeQuery()) {
+							if (!rs.next()) {
+								System.out.println("Kein nächstes Chapter!");
+							} else {
+								int nextOrder = rs.getInt("id");
+								String nickname = user.getNickName();
+								PreparedStatement upd = con.prepareStatement(this.updateUserAccessChapter);
+								upd.setInt(1, nextOrder);
+								upd.setString(2, nickname);
+								upd.executeUpdate();
+								user.setAccessChapterId(String.valueOf(nextOrder));
+								System.out.println(
+										"Access für Chapter: " + chapterId + " wurde auf " + nextOrder + " geupdated!");
+								// Set acces_section auf erste Section im
+								// Chapter
+								PreparedStatement firstSectionStmnt = con.prepareStatement(this.selectFirstSection);
+								firstSectionStmnt.setString(1, chapterId);
+								try (ResultSet sectRes = stmnt.executeQuery()) {
+									if (!sectRes.next()) {
+										System.out.println("Neues Chapter hat keine sections!");
+									} else {
+										PreparedStatement updSect = con.prepareStatement(this.updateUserAccessSection);
+										upd.setInt(1, sectRes.getInt("id"));
+										upd.setString(2, nickname);
+										upd.executeUpdate();
+										user.setAccessChapterId(String.valueOf(nextOrder));
+										System.out.println(
+												"Access für Section: " + sectionId + " wurde auf " + nextOrder + " geupdated!");
+									}
+								}
+							}
+						}
+					}
+
+				} else {
+					int nextOrder = rs.getInt("id");
+					// Be sure users access ids are the same as the answered
+					// exam (dont update access if user answers an old exam)
+					System.out.println(user.getAccessSectionId() + ": " + sectionId + "|" + user.getAccessChapterId()
+							+ ": " + chapterId);
+					if (user.getAccessSectionId().equals(sectionId) && user.getAccessChapterId().equals(chapterId)) {
+						String nickname = user.getNickName();
+						PreparedStatement upd = con.prepareStatement(this.updateUserAccessSection);
+						upd.setInt(1, nextOrder);
+						upd.setString(2, nickname);
+						upd.executeUpdate();
+						user.setAccessSectionId(String.valueOf(nextOrder));
+						System.out.println(
+								"Access für Section: " + sectionId + " wurde auf " + nextOrder + " geupdated!");
+
+					} else {
+						System.out.println("Alter Test wurde beantwortet");
+					}
+				}
+				return user;
+			}
+		} catch (SQLException e) {
+			for (Throwable t : e.getSuppressed())
+				t.printStackTrace();
+			e.printStackTrace();
+		}
+		return user;
 	}
 }

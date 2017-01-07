@@ -91,13 +91,15 @@ function updateExamResult(result){
 }
 
 function finishExam(){
-    fetch(`exam?section-id=${this.$route.params.sectionId}`,
+    console.log(document.cookie);
+    fetch(`exam?section-id=${this.$route.params.sectionId}&chapter-id=${this.$route.params.chapterId}`,
     {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'credentials': 'same-origin'
+
         },
+        credentials: 'include',
         method: 'POST',
         body: JSON.stringify(this.examAnswers)
     }).then((resp) => {
