@@ -5,6 +5,7 @@ import index from './app/components/index.vue';
 import chapter from './app/components/chapter.vue';
 import section from './app/components/section.vue';
 import exam from './app/components/exam/exam.vue';
+import user from './app/components/user.vue';
 
 Vue.use(vueRouter);
 
@@ -12,6 +13,10 @@ const routes = [
     {
         path: '/',
         component: index
+    },
+    {
+        path: '/user',
+        component: user
     },
     {
         path: '/:chapterId',
