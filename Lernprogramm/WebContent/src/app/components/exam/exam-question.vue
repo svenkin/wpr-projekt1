@@ -22,10 +22,9 @@
             </label>
         </div>
 
-        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" v-on:click="nextQuestion()">
+        <button :disabled="!answered" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" v-on:click="nextQuestion()">
             {{buttonText}}
         </button>
-
     </div>
 </template>
 <style scoped>
@@ -48,22 +47,34 @@
 <script>
 
 export default{
-    data(){
-        return{
-            questionIndex : 0,
-            buttonText: 'Nächste Frage',
-            currentQuestion: null,
-            singleResult : '',
-            textResult: '',
-            multipleResult: [],
-            results : {}
-        }
-    },
+    data,
     props : ['questions'],
     methods:{
         nextQuestion
     },
+    computed: {
+        answered: function() {
+            if(this.singleResult == '' &&  this.textResult == '' && this.multipleResult.length == 0 ){
+                return false;
+            } else {
+                return true;
+            }
+        }
+    },
     created
+}
+
+function data(){
+    return{
+        questionIndex: 0,
+        buttonText: 'Nächste Frage',
+        currentQuestion: null,
+        singleResult : '',
+        textResult: '',
+        multipleResult: [],
+        results: {},
+        answered: false
+    }
 }
 function nextQuestion(){
 
@@ -76,6 +87,7 @@ function nextQuestion(){
                 questionId: this.currentQuestion.questionId,
                 type: 'MULTIPLE'
             }
+        this.multipleResult = [];
         break;
     case 'SINGLE':
         result = {
@@ -83,6 +95,7 @@ function nextQuestion(){
             questionId: this.currentQuestion.questionId,
             type: 'SINGLE'
         }
+        this.singleResult = '';
         break;
     case 'TEXT':
         result = {
@@ -90,6 +103,7 @@ function nextQuestion(){
             questionId: this.currentQuestion.questionId,
             type: 'TEXT'
         }
+        this.textResult = '';
         break;
     }
     this.$emit('questionResult',result)

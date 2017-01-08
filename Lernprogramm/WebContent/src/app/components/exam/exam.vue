@@ -43,14 +43,7 @@ import progress from './exam-progress.vue';
 import question from './exam-question.vue';
 
 export default{
-  data: function () {
-     return {
-       questionNumber : 1,
-       exam: null,
-       answeredExamResults : null,
-       examAnswers: null
-     }
-   },
+  data,
   created,
   methods: {
     updateIndex,
@@ -69,6 +62,14 @@ export default{
   }
 }
 
+function data(){
+    return {
+       questionNumber : 1,
+       exam: null,
+       answeredExamResults : null,
+       examAnswers: null
+    }
+}
 function created() {
      fetch(`exam?section-id=${this.$route.params.sectionId}`, { credentials: 'same-origin' })
         .then((resp) => {

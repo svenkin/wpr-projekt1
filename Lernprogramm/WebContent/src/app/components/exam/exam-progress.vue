@@ -46,7 +46,7 @@ export default{
   },
   props : ['max','current'],
   watch : {
-        current : function (value) {
+        current : (value) => {
           if(value >= 0 && this.max >= value){
             this.width = ((100/this.max)*value)+'%';
           }
