@@ -35,9 +35,10 @@
   position: absolute;
 }
 
+
 </style>
 <script>
-
+var max = 0;
 export default{
   data: () => {
     return {
@@ -45,20 +46,23 @@ export default{
     }
   },
   props : ['max','current'],
-  watch : {
-        current : (value) => {
-          if(value >= 0 && this.max >= value){
-            this.width = ((100/this.max)*value)+'%';
-          }
+    watch: {
+        current: function(val) {
+            if(val >= 0 && this.max >= val){
+                this.width = ((100/this.max)*this.current)+'%';
+                console.log('watch', this.width);
+           }
         }
-      },
+    },
   created
 }
-
 function created(){
     //Set width on init
     if(this.current >= 0 && this.max >= this.current){
+        max = this.max;
         this.width = ((100/this.max)*this.current)+'%';
+        console.log('init', this.width, this.current,this.max);
       }
 }
+
 </script>

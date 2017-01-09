@@ -35,6 +35,7 @@ import model.Question;
 import model.QuestionType;
 import model.TextQuestion;
 import model.User;
+import tools.SqlBooleanHelper;
 
 /**
  * Servlet implementation class ExamServlet
@@ -45,14 +46,15 @@ public class ExamServlet extends HttpServlet {
 
 	@Resource
 	private DataSource dataSource;
-	private String selectExamBySectionId = "SELECT lernprogramm.exam.description, lernprogramm.question.question, lernprogramm.question.type, lernprogramm.answer.text, lernprogramm.answer.id as answerId, lernprogramm.answer.correct, lernprogramm.question.id as questionId"
-			+ " FROM lernprogramm.exam JOIN lernprogramm.question ON lernprogramm.exam.id = question.exam_id"
-			+ " JOIN lernprogramm.answer ON lernprogramm.question.id = answer.question_id WHERE exam.section_id = ?;";
+	private String selectExamBySectionId = "SELECT exam.description, question.question, question.type, answer.text, answer.id as answerId, answer.correct, question.id as questionId"
+			+ " FROM exam JOIN question ON exam.id = question.exam_id"
+			+ " JOIN answer ON question.id = answer.question_id WHERE exam.section_id = ?;";
 	private String selectNextSection = "Select section.order, section.id from section where section.order > (Select section.order from section Where section.id = ?) limit 1;";
 	private String updateUserAccessSection = "UPDATE user set access_section = ? Where nick_name = ?;";
 	private String selectNextChapter = "Select chapter.order, chapter.id from chapter where chapter.order > ? limit 1;";
 	private String updateUserAccessChapter = "UPDATE user set access_chapter = ? Where nick_name = ?;";
 	private String selectFirstSection = "Select * from section where chapter_id = ? Order by section.order limit 1;";
+	private String insertAnsweredQuestion = "INSERT INTO answered_questions (question, user_nickname, correct) VALUES (?, ?, ?);";
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -80,52 +82,63 @@ public class ExamServlet extends HttpServlet {
 			BufferedReader body = request.getReader();
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");
-			Json.createWriter(response.getWriter()).write(this.getExamResults(sectionId, body));
+			Json.createWriter(response.getWriter()).write(this.getExamResults(sectionId, body, currentUser));
 		}
 
 	}
 
-	private Vector<ExamResult> checkExamResult(String sectionId, BufferedReader body) {
+	private Vector<ExamResult> checkExamResult(String sectionId, BufferedReader body, User currentUser) {
 		Exam exam = loadExam(sectionId);
 		Vector<ExamResult> results = new Vector<>();
 		if (exam != null) {
-			Hashtable<Integer, Question> examQuestions = exam.getPremappedQuestions();
-			JsonReader reader = Json.createReader(body);
-			JsonObject obj = reader.readObject();
-			JsonValue val = obj.get("answers");
-			JsonArray answers = (JsonArray) val;
-			// For each answer in the answers array
-			for (JsonValue jsonValue : answers) {
-				boolean correct = false;
-				JsonObject objc = (JsonObject) jsonValue;
-				int questionId = objc.getInt("questionId");
-				Question q = examQuestions.get(questionId);
-				// Depending on question type cast the question and check if
-				// correctly answered
-				switch (q.getType().toString()) {
-				case "SINGLE":
-					ChoicesQuestion cq = (ChoicesQuestion) q;
-					correct = cq.checkIfChoiceIsCorrect(objc.getInt("answer"));
-					break;
-				case "MULTIPLE":
-					ChoicesQuestion cq2 = (ChoicesQuestion) q;
-					JsonArray ans = objc.getJsonArray("answer");
-					int[] arr = toIntArray(ans);
-					correct = cq2.checkIfChoicesAreCorrect(arr);
-					break;
-				case "TEXT":
-					TextQuestion text = (TextQuestion) q;
-					correct = text.checkForKeywords(objc.getString("answer"));
-					break;
+			try (Connection con = this.dataSource.getConnection();
+					PreparedStatement stmnt = con.prepareStatement(this.insertAnsweredQuestion)) {
+				Hashtable<Integer, Question> examQuestions = exam.getPremappedQuestions();
+				JsonReader reader = Json.createReader(body);
+				JsonObject obj = reader.readObject();
+				JsonValue val = obj.get("answers");
+				JsonArray answers = (JsonArray) val;
+				// For each answer in the answers array
+				for (JsonValue jsonValue : answers) {
+					boolean correct = false;
+					JsonObject objc = (JsonObject) jsonValue;
+					int questionId = objc.getInt("questionId");
+					Question q = examQuestions.get(questionId);
+					// Depending on question type cast the question and check if
+					// correctly answered
+					switch (q.getType().toString()) {
+					case "SINGLE":
+						ChoicesQuestion cq = (ChoicesQuestion) q;
+						correct = cq.checkIfChoiceIsCorrect(objc.getInt("answer"));
+						break;
+					case "MULTIPLE":
+						ChoicesQuestion cq2 = (ChoicesQuestion) q;
+						JsonArray ans = objc.getJsonArray("answer");
+						int[] arr = toIntArray(ans);
+						correct = cq2.checkIfChoicesAreCorrect(arr);
+						break;
+					case "TEXT":
+						TextQuestion text = (TextQuestion) q;
+						correct = text.checkForKeywords(objc.getString("answer"));
+						break;
+					}
+					stmnt.setString(1, q.getQuestion());
+					stmnt.setString(2, currentUser.getNickName());
+					stmnt.setInt(3, SqlBooleanHelper.booleanToInt(correct));
+					stmnt.executeUpdate();
+					results.add(new ExamResult(q.getQuestion(), correct));
 				}
-				results.add(new ExamResult(q.getQuestion(), correct));
+			} catch (SQLException e) {
+				for (Throwable t : e.getSuppressed())
+					t.printStackTrace();
+				e.printStackTrace();
 			}
 		}
 		return results;
 	}
 
-	private JsonStructure getExamResults(String sectionId, BufferedReader body) {
-		Vector<ExamResult> results = checkExamResult(sectionId, body);
+	private JsonStructure getExamResults(String sectionId, BufferedReader body, User currentUser) {
+		Vector<ExamResult> results = checkExamResult(sectionId, body, currentUser);
 		JsonObjectBuilder build = Json.createObjectBuilder();
 		JsonArrayBuilder array = Json.createArrayBuilder();
 		for (ExamResult examResult : results) {
@@ -178,7 +191,7 @@ public class ExamServlet extends HttpServlet {
 							String text = rs.getString("text");
 							if (!text.isEmpty()) {
 								Choice choice = new Choice(rs.getInt("answerId"), questionId,
-										checkIfCorrect(rs.getInt("correct")), text);
+										SqlBooleanHelper.checkIfCorrect(rs.getInt("correct")), text);
 								multiple.addChoice(choice);
 							}
 							questions.put(questionId, multiple);
@@ -188,7 +201,7 @@ public class ExamServlet extends HttpServlet {
 							String singleText = rs.getString("text");
 							if (!singleText.isEmpty()) {
 								Choice choice = new Choice(rs.getInt("answerId"), questionId,
-										checkIfCorrect(rs.getInt("correct")), singleText);
+										SqlBooleanHelper.checkIfCorrect(rs.getInt("correct")), singleText);
 								single.addChoice(choice);
 							}
 							questions.put(questionId, single);
@@ -256,10 +269,6 @@ public class ExamServlet extends HttpServlet {
 		return structure;
 	}
 
-	private boolean checkIfCorrect(int numb) {
-		return numb > 0;
-	}
-
 	private int[] toIntArray(JsonArray array) {
 		int[] resArray = new int[array.size()];
 		if (array != null) {
@@ -283,7 +292,7 @@ public class ExamServlet extends HttpServlet {
 		String text = rs.getString("text");
 		if (!text.isEmpty()) {
 			Choice choice = new Choice(rs.getInt("answerId"), rs.getInt("questionId"),
-					checkIfCorrect(rs.getInt("correct")), text);
+					SqlBooleanHelper.checkIfCorrect(rs.getInt("correct")), text);
 			choicesQuestion.addChoice(choice);
 		}
 		return choicesQuestion;
@@ -326,8 +335,8 @@ public class ExamServlet extends HttpServlet {
 										upd.setString(2, nickname);
 										upd.executeUpdate();
 										user.setAccessChapterId(String.valueOf(nextOrder));
-										System.out.println(
-												"Access für Section: " + sectionId + " wurde auf " + nextOrder + " geupdated!");
+										System.out.println("Access für Section: " + sectionId + " wurde auf "
+												+ nextOrder + " geupdated!");
 									}
 								}
 							}

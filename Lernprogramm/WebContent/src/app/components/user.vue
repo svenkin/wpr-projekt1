@@ -24,6 +24,19 @@
                         </li>
                     </ul>
                 </div>
+                <div class="mdl-card__supporting-text" v-if="user.answeredQuestions.length > 0">
+                    <h4>Bereits Beantwortete Fragen</h4>
+                    <p>Es wurden {{user.correctAnswered}} von {{user.answeredQuestions.length}} Fragen richtig beantwortet.</p>
+                    <ul class="demo-list-item mdl-list answers">
+                        <li class="mdl-list__item" v-for="answer in user.answeredQuestions">
+                            <span class="mdl-list__item-primary-content">
+                                <i class="material-icons mdl-list__item-icon" v-if="answer.correct" style="color:#4CAF50;">check</i>
+                                <i class="material-icons mdl-list__item-icon" v-if="!answer.correct" style="color:#F44336;">close</i>
+                                {{answer.question}}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
                 <div class="mdl-card__actions mdl-card--border">
                     <router-link class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" to="/" mdl-upgrade>Zur Kapitelübersicht</router-link>
                 </div>
@@ -31,6 +44,16 @@
         </div>
     </section>
 </template>
+<style scoped>
+    ul{
+        margin: 0;
+    }
+    .answers {
+        max-height: 400px;
+        overflow-y: scroll;
+    }
+
+</style>
 <script>
     export default{
         data,
@@ -49,4 +72,5 @@
             this.user = body.data
         })
     }
+
 </script>
