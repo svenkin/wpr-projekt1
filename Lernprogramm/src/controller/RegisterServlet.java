@@ -79,7 +79,7 @@ public class RegisterServlet extends HttpServlet {
 			statement.setString(4, newUser.getNickName());
 			statement.setString(5, newUser.getPassword());
 			statement.setString(6, newUser.getAccessChapterId());
-			statement.setString(7,  newUser.getAccessSectionId());
+			statement.setString(7, newUser.getAccessSectionId());
 			statement.executeUpdate();
 			return true;
 		} catch (SQLException e) {

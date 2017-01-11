@@ -17,6 +17,11 @@
             padding-left: 16px;
         }
 
+        .mdl-layout-title {
+            color: #fff;
+            text-decoration: none;
+        }
+
         .mdl-navigation__link {
             text-transform: uppercase;
         }
@@ -32,11 +37,12 @@
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
             <header class="mdl-layout__header">
                 <div class="mdl-layout__header-row">
-                    <span class="mdl-layout-title">Lernprogramm</span>
+                    <router-link :to="{ path: '/'}" class="mdl-layout-title">Lernprogramm</router-link>
                     <div class="mdl-layout-spacer"></div>
                     <nav class="mdl-navigation mdl-layout--large-screen-only">
-                        <a class="mdl-navigation__link" href="logout">Abmelden</a>
-                        <router-link class="mdl-navigation__link" :to="{ path: '/user'}">User</router-link>
+                        <a href="continue" class="mdl-navigation__link">Weitermachen</a>
+                        <router-link class="mdl-navigation__link" :to="{ path: '/user'}">Benutzer</router-link>
+                        <a href="logout" class="mdl-navigation__link">Abmelden</a>
                     </nav>
                 </div>
             </header>

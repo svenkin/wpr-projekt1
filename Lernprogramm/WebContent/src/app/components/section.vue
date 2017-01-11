@@ -7,7 +7,12 @@
                 <h4 class="mdl-card__subtitle-text">{{ currentLesson.title}}</h4>
             </div>
             <div class="mdl-card__supporting-text">
-                <p>{{ currentLesson.textContent }}</p>
+                <figure v-if="currentLesson.image"
+                        class="mdl-shadow--2dp">
+                    <img :src="`res/${currentLesson.image}`">
+                    <figcaption>{{ currentLesson.imageDescription }}</figcaption>
+                </figure>
+                <article>{{ currentLesson.textContent }}</article>
             </div>
             <div class="mdl-card__actions mdl-card--border">
                 <a :disabled="!hasPreviousLesson"
@@ -17,12 +22,11 @@
                    style="float: left;">
                     Zurück
                 </a>
-                <a :disabled="!hasNextLesson"
-                   @click.prevent="nextLesson()"
+                <a @click.prevent="nextLesson()"
                    v-mdl-upgrade
                    class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
                    style="float: right;">
-                    Weiter
+                    {{ continueText }}
                 </a>
             </div>
         </div>
@@ -30,13 +34,31 @@
 </section>
 </template>
 
+<style scoped>
+figure {
+    float: right;
+    padding: 12px;
+    border-radius: 2px;
+}
+
+figure img {
+    width: 320px;
+}
+
+figcaption {
+    margin-top: 6px;
+    text-align: center;
+}
+</style>
+
 <script>
 export default {
     data,
     computed: {
         currentLesson,
         hasNextLesson,
-        hasPreviousLesson
+        hasPreviousLesson,
+        continueText
     },
     methods: {
         nextLesson,
@@ -71,6 +93,12 @@ function previousLesson() {
 
 function nextLesson() {
     if (this.hasNextLesson) this.currentLessonIndex++;
+    else this.$router.push({ path: `/${this.$route.params.chapterId}/${this.$route.params.sectionId}/exam`});
+}
+
+function continueText() {
+    if (this.hasNextLesson) return 'Weiter';
+    else return 'Zum Test';
 }
 
 function created() {
