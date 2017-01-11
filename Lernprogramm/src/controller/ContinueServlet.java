@@ -15,8 +15,8 @@ public class ContinueServlet extends HttpServlet {
        
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		BetterCookies cookies = new BetterCookies(request.getCookies());
-		String continueChapterId = cookies.getCookieValue("continue-chapter");
-		String continueSectionId = cookies.getCookieValue("continue-section");
+		String continueChapterId = cookies.getCookieValue("continue-chapter-id");
+		String continueSectionId = cookies.getCookieValue("continue-section-id");
 		if (continueChapterId == null || continueSectionId == null) response.sendRedirect("app.html#/");
 		else response.sendRedirect("app.html#/" + continueChapterId + '/' + continueSectionId);
 	}

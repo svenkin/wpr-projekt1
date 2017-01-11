@@ -128,6 +128,7 @@ function nextQuestion(){
 }
 function created(){
     this.currentQuestion = this.questions[this.questionIndex];
+    if(this.questions.length == 1) this.buttonText = 'Test Beenden';
 }
 
 

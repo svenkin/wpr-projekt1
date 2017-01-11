@@ -95,6 +95,7 @@ public class BetterCookies {
 	
 	public void addAllCookiesToResponse(HttpServletResponse res) {
 		for (Entry<String, Cookie> entry : this.betterCookies.entrySet()) {
+			System.out.println("Set Cookie: "+entry.getValue());
 			res.addCookie(entry.getValue());
 		}
 	}

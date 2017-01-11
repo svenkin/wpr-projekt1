@@ -22,6 +22,7 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +36,7 @@ import model.Question;
 import model.QuestionType;
 import model.TextQuestion;
 import model.User;
+import tools.BetterCookies;
 import tools.SqlBooleanHelper;
 
 /**
@@ -49,9 +51,9 @@ public class ExamServlet extends HttpServlet {
 	private String selectExamBySectionId = "SELECT exam.description, question.question, question.type, answer.text, answer.id as answerId, answer.correct, question.id as questionId"
 			+ " FROM exam JOIN question ON exam.id = question.exam_id"
 			+ " JOIN answer ON question.id = answer.question_id WHERE exam.section_id = ?;";
-	private String selectNextSection = "Select section.order, section.id from section where section.order > (Select section.order from section Where section.id = ?) limit 1;";
+	private String selectNextSection = "Select section.order, section.id from section where section.order > (Select section.order from section Where section.id = ?) and section.chapter_id = ? limit 1;";
 	private String updateUserAccessSection = "UPDATE user set access_section = ? Where nick_name = ?;";
-	private String selectNextChapter = "Select chapter.order, chapter.id from chapter where chapter.order > ? limit 1;";
+	private String selectNextChapter = "Select chapter.order, chapter.id from chapter where chapter.id > ? limit 1;";
 	private String updateUserAccessChapter = "UPDATE user set access_chapter = ? Where nick_name = ?;";
 	private String selectFirstSection = "Select * from section where chapter_id = ? Order by section.order limit 1;";
 	private String insertAnsweredQuestion = "INSERT INTO answered_questions (question, user_nickname, correct) VALUES (?, ?, ?);";
@@ -76,8 +78,14 @@ public class ExamServlet extends HttpServlet {
 		if (sectionId != null && !sectionId.isEmpty() && chapterId != null && !chapterId.isEmpty()
 				&& currentUser != null) {
 			User updatedUser = this.updateUserAccess(sectionId, chapterId, currentUser);
-			System.out.println(
-					"User from update: " + updatedUser.getAccessSectionId() + "|" + updatedUser.getAccessChapterId());
+			BetterCookies bc = new BetterCookies();
+			Cookie chapterCookie = new Cookie("continue-chapter-id", updatedUser.getAccessChapterId());
+			chapterCookie.setMaxAge(86400);
+			bc.addCookie(chapterCookie);
+			Cookie sectionCookie = new Cookie("continue-section-id", updatedUser.getAccessSectionId());
+			sectionCookie.setMaxAge(86400);
+			bc.addCookie(sectionCookie);
+			bc.addAllCookiesToResponse(response);
 			request.getSession().setAttribute("user", updatedUser);
 			BufferedReader body = request.getReader();
 			response.setContentType("application/json");
@@ -301,19 +309,21 @@ public class ExamServlet extends HttpServlet {
 	private User updateUserAccess(String sectionId, String chapterId, User user) {
 		try (Connection con = this.dataSource.getConnection();
 				PreparedStatement statement = con.prepareStatement(this.selectNextSection)) {
-			statement.setString(1, chapterId);
+			statement.setString(1, sectionId);
+			statement.setString(2, chapterId);
 			try (ResultSet rs = statement.executeQuery()) {
 				if (!rs.next()) {
 					System.out.println("Keine nächste Section!");
 					// Fetch next chapter id
 					if (user.getAccessChapterId().equals(chapterId)) {
 						PreparedStatement stmnt = con.prepareStatement(this.selectNextChapter);
+						System.out.println("ChapterId: "+chapterId);
 						stmnt.setString(1, chapterId);
 						try (ResultSet chaptRes = stmnt.executeQuery()) {
-							if (!rs.next()) {
+							if (!chaptRes.next()) {
 								System.out.println("Kein nächstes Chapter!");
 							} else {
-								int nextOrder = rs.getInt("id");
+								int nextOrder = chaptRes.getInt("id");
 								String nickname = user.getNickName();
 								PreparedStatement upd = con.prepareStatement(this.updateUserAccessChapter);
 								upd.setInt(1, nextOrder);
@@ -331,12 +341,12 @@ public class ExamServlet extends HttpServlet {
 										System.out.println("Neues Chapter hat keine sections!");
 									} else {
 										PreparedStatement updSect = con.prepareStatement(this.updateUserAccessSection);
-										upd.setInt(1, sectRes.getInt("id"));
-										upd.setString(2, nickname);
-										upd.executeUpdate();
-										user.setAccessChapterId(String.valueOf(nextOrder));
+										updSect.setInt(1, sectRes.getInt("id"));
+										updSect.setString(2, nickname);
+										updSect.executeUpdate();
+										user.setAccessSectionId(sectRes.getString("id"));
 										System.out.println("Access für Section: " + sectionId + " wurde auf "
-												+ nextOrder + " geupdated!");
+												+ sectRes.getString("id") + " geupdated!");
 									}
 								}
 							}
@@ -345,10 +355,9 @@ public class ExamServlet extends HttpServlet {
 
 				} else {
 					int nextOrder = rs.getInt("id");
+					System.out.println("Next Section id: " + nextOrder);
 					// Be sure users access ids are the same as the answered
 					// exam (dont update access if user answers an old exam)
-					System.out.println(user.getAccessSectionId() + ": " + sectionId + "|" + user.getAccessChapterId()
-							+ ": " + chapterId);
 					if (user.getAccessSectionId().equals(sectionId) && user.getAccessChapterId().equals(chapterId)) {
 						String nickname = user.getNickName();
 						PreparedStatement upd = con.prepareStatement(this.updateUserAccessSection);
