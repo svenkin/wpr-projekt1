@@ -17,6 +17,7 @@ import javax.sql.DataSource;
 
 import model.Gender;
 import model.User;
+import tools.ContextUser;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
@@ -29,8 +30,9 @@ public class LoginServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String nickName = request.getParameter("nick-name");
 		String password = request.getParameter("password");
-
 		User user = loginUser(nickName, password);
+		//On Login use ServletContext
+		ContextUser.use(getServletContext());
 		if (user != null) {
 			HttpSession session = request.getSession();
 			session.setAttribute("user", user);
