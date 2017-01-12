@@ -317,7 +317,6 @@ public class ExamServlet extends HttpServlet {
 					// Fetch next chapter id
 					if (user.getAccessChapterId().equals(chapterId)) {
 						PreparedStatement stmnt = con.prepareStatement(this.selectNextChapter);
-						System.out.println("ChapterId: "+chapterId);
 						stmnt.setString(1, chapterId);
 						try (ResultSet chaptRes = stmnt.executeQuery()) {
 							if (!chaptRes.next()) {
@@ -355,7 +354,6 @@ public class ExamServlet extends HttpServlet {
 
 				} else {
 					int nextOrder = rs.getInt("id");
-					System.out.println("Next Section id: " + nextOrder);
 					// Be sure users access ids are the same as the answered
 					// exam (dont update access if user answers an old exam)
 					if (user.getAccessSectionId().equals(sectionId) && user.getAccessChapterId().equals(chapterId)) {

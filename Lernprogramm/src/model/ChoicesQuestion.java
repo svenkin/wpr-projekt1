@@ -4,6 +4,7 @@ import java.util.Vector;
 
 public class ChoicesQuestion extends Question {
 	private Vector<Choice> choices;
+	private int correctCount = 0;
 
 	public ChoicesQuestion(String question) {
 		super(question);
@@ -15,10 +16,16 @@ public class ChoicesQuestion extends Question {
 	}
 
 	public void setChoices(Vector<Choice> choices) {
+		for (Choice choice : choices) {
+			if (choice.isCorrect())
+				correctCount++;
+		}
 		this.choices = choices;
 	}
 
 	public boolean addChoice(Choice choice) {
+		if (choice.isCorrect())
+			correctCount++;
 		return choices.add(choice);
 	}
 
@@ -32,13 +39,17 @@ public class ChoicesQuestion extends Question {
 	}
 
 	public boolean checkIfChoicesAreCorrect(int[] choiceId) {
-		int correctCount = 0;
+		int correctAnswered = 0;
+		boolean falseAnswer = false;
 		for (Choice choice : choices) {
 			for (int i = 0; i < choiceId.length; i++) {
-				if (choice.isCorrect() && choiceId[i] == choice.getId())
-					correctCount++;
+				if (choiceId[i] == choice.getId() && choice.isCorrect()) {
+					correctAnswered++;
+				} else if (choiceId[i] == choice.getId()) {
+					falseAnswer = true;
+				}
 			}
 		}
-		return correctCount == choiceId.length;
+		return correctAnswered == this.correctCount && !falseAnswer;
 	}
 }
