@@ -17,7 +17,10 @@ import javax.servlet.http.HttpServletResponse;
 		"/app.html",
 		"/chapters",
 		"/sections",
-		"/exam"
+		"/lessons",
+		"/exam",
+		"/user",
+		"/continue"
 })
 public class AuthorizationFilter implements Filter {
 
