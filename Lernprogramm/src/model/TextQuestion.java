@@ -6,7 +6,7 @@ public class TextQuestion extends Question {
 
 	public TextQuestion(String question, String keywords, int id) {
 		super(question, id);
-		this.keywords = keywords;
+		this.keywords = keywords.toLowerCase();
 	}
 
 	public String getKeywords() {
@@ -14,7 +14,7 @@ public class TextQuestion extends Question {
 	}
 
 	public void setKeywords(String keywords) {
-		this.keywords = keywords;
+		this.keywords = keywords.toLowerCase();
 	}
 
 	public TextQuestion(String question) {
@@ -22,7 +22,7 @@ public class TextQuestion extends Question {
 	}
 
 	public boolean checkForKeywords(String words) {
-		String[] cutWords = words.split(" ");
+		String[] cutWords = words.toLowerCase().split(" ");
 		int correct = 0;
 		for (String string : cutWords) {
 			if (keywords.contains(string))
